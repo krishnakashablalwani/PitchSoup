@@ -1,11 +1,16 @@
 import { supabase } from '@/lib/supabase';
 import Link from "next/link";
 
+import { auth } from '@clerk/nextjs/server';
+
 export const dynamic = 'force-dynamic'; 
 
 export default async function ShowcasePage() {
+  const { userId } = await auth();
+
   const { data: pitches } = await supabase.from("Pitch")
     .select("*")
+    .or(`userId.eq.${userId},userId.eq.all-users`)
     .order("createdAt", { ascending: false })
     .limit(20);
 

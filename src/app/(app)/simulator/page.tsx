@@ -13,7 +13,7 @@ export default async function SimulatorIndexPage() {
 
   const { data: pitches } = await supabase.from('Pitch')
     .select('*')
-    .eq('userId', userId)
+    .or(`userId.eq.${userId},userId.eq.all-users`)
     .order('createdAt', { ascending: false });
 
   return (
