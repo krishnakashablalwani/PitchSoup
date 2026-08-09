@@ -1,7 +1,7 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { getSupabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
 
 export default async function DashboardPage() {
   const user = await currentUser();
@@ -19,7 +19,7 @@ export default async function DashboardPage() {
   const firstName = user.firstName || "Founder";
 
   
-  const { data: pitches } = await (await getSupabase()).from("Pitch")
+  const { data: pitches } = await supabase.from("Pitch")
     .select("id, startupName, createdAt")
     .eq("userId", user.id)
     .order("createdAt", { ascending: false })

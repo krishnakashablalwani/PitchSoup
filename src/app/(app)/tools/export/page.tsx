@@ -1,4 +1,4 @@
-import { getSupabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { auth } from "@clerk/nextjs/server";
 import ExportHubClient from "./ExportHubClient";
 
@@ -7,7 +7,7 @@ export default async function ExportHubPage() {
 
   if (!userId) return null;
 
-  const { data: pitches } = await (await getSupabase()).from("Pitch")
+  const { data: pitches } = await supabase.from("Pitch")
     .select("*")
     .eq("userId", userId)
     .order("createdAt", { ascending: false });

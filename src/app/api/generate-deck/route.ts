@@ -1,4 +1,4 @@
-import { getSupabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { auth } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Pitch ID required' }, { status: 400 });
     }
 
-    const { data: pitch, error: fetchError } = await (await getSupabase()).from('Pitch')
+    const { data: pitch, error: fetchError } = await supabase.from('Pitch')
       .select('*')
       .eq('id', pitchId)
       .eq('userId', userId)
@@ -86,7 +86,7 @@ Slide structure:
     }
 
     // Save to DB
-    const { error: updateError } = await (await getSupabase()).from('Pitch')
+    const { error: updateError } = await supabase.from('Pitch')
       .update({ deckData: JSON.stringify(parsedData) })
       .eq('id', pitch.id);
 

@@ -1,10 +1,10 @@
-import { getSupabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
 import Link from "next/link";
 
 export const revalidate = 0; 
 
 export default async function ShowcasePage() {
-  const { data: pitches } = await (await getSupabase()).from("Pitch")
+  const { data: pitches } = await supabase.from("Pitch")
     .select("*")
     .order("createdAt", { ascending: false })
     .limit(20);

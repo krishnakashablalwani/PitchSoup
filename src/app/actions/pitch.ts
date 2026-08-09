@@ -1,5 +1,5 @@
 "use server";
-import { getSupabase, supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import { GoogleGenerativeAI } from '@google/generative-ai';

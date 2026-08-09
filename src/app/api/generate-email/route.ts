@@ -1,4 +1,4 @@
-import { getSupabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { auth } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing parameters' }, { status: 400 });
     }
 
-    const { data: pitch, error: fetchError } = await (await getSupabase()).from('Pitch')
+    const { data: pitch, error: fetchError } = await supabase.from('Pitch')
       .select('*')
       .eq('id', pitchId)
       .eq('userId', userId)

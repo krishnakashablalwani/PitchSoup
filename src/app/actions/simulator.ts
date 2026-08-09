@@ -1,6 +1,6 @@
 "use server";
 
-import { getSupabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { auth } from '@clerk/nextjs/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
@@ -11,7 +11,7 @@ export async function chatWithCoach(pitchId: string, history: { role: string, te
   if (!userId) throw new Error("Unauthorized");
 
   
-  const { data: pitch, error } = await (await getSupabase()).from('Pitch')
+  const { data: pitch, error } = await supabase.from('Pitch')
     .select('*')
     .eq('id', pitchId)
     .eq('userId', userId)
