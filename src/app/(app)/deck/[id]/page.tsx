@@ -1,4 +1,4 @@
-import { getSupabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { auth } from "@clerk/nextjs/server";
 import { notFound, redirect } from "next/navigation";
 import DeckClient from "./DeckClient";
@@ -11,7 +11,7 @@ export default async function DeckPage({ params }: { params: Promise<{ id: strin
     redirect("/sign-in");
   }
 
-  const { data: pitch, error } = await (await getSupabase()).from('Pitch')
+  const { data: pitch, error } = await supabase.from('Pitch')
     .select('*')
     .eq('id', id)
     .eq('userId', userId)

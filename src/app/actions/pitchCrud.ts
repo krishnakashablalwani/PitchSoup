@@ -1,6 +1,6 @@
 "use server";
 
-import { getSupabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
@@ -12,7 +12,7 @@ export async function deletePitch(pitchId: string) {
     throw new Error('Unauthorized');
   }
 
-  const { error } = await (await getSupabase()).from('Pitch')
+  const { error } = await supabase.from('Pitch')
     .delete()
     .eq('id', pitchId)
     .eq('userId', userId);
@@ -38,7 +38,7 @@ export async function updatePitch(pitchId: string, formData: FormData) {
   const solution = formData.get('solution') as string;
   const targetMarket = formData.get('targetMarket') as string;
 
-  const { error } = await (await getSupabase()).from('Pitch')
+  const { error } = await supabase.from('Pitch')
     .update({ startupName, problem, solution, targetMarket })
     .eq('id', pitchId)
     .eq('userId', userId);

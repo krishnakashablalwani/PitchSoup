@@ -1,5 +1,5 @@
 "use server";
-import { getSupabase } from '@/lib/supabase';
+import { getSupabase, supabase } from '@/lib/supabase';
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import { GoogleGenerativeAI } from '@google/generative-ai';
@@ -59,7 +59,7 @@ export async function createPitch(formData: FormData) {
     
   }
 
-  const { data, error } = await (await getSupabase()).from('Pitch')
+  const { data, error } = await supabase.from('Pitch')
     .insert([{
       userId,
       startupName,

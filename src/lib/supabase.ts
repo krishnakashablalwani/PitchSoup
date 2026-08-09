@@ -17,6 +17,9 @@ export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
 
 
 export const createClerkSupabaseClient = (clerkToken: string) => {
+  if (!clerkToken) {
+    return createClient(supabaseUrl, supabaseAnonKey)
+  }
   return createClient(supabaseUrl, supabaseAnonKey, {
     global: {
       headers: {
