@@ -2,6 +2,9 @@ import { supabase } from '@/lib/supabase';
 import { auth } from "@clerk/nextjs/server";
 import PitchScoreClient from "./PitchScoreClient";
 
+export const revalidate = 0;
+
+
 export default async function PitchScorePage() {
   const { userId } = await auth();
 

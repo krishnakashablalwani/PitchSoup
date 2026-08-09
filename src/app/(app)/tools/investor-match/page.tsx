@@ -2,6 +2,9 @@ import { supabase } from '@/lib/supabase';
 import { auth } from '@clerk/nextjs/server';
 import InvestorMatchClient from './InvestorMatchClient';
 
+export const revalidate = 0;
+
+
 export default async function InvestorMatchPage() {
   const { userId } = await auth();
   

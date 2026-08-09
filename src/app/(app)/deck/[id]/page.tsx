@@ -3,6 +3,9 @@ import { auth } from "@clerk/nextjs/server";
 import { notFound, redirect } from "next/navigation";
 import DeckClient from "./DeckClient";
 
+export const revalidate = 0;
+
+
 export default async function DeckPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const { userId } = await auth();

@@ -2,6 +2,9 @@ import { supabase } from '@/lib/supabase';
 import { auth } from "@clerk/nextjs/server";
 import ExportHubClient from "./ExportHubClient";
 
+export const revalidate = 0;
+
+
 export default async function ExportHubPage() {
   const { userId } = await auth();
 

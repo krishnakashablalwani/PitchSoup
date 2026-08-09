@@ -2,6 +2,9 @@ import { supabase } from '@/lib/supabase';
 import { auth } from "@clerk/nextjs/server";
 import BattlecardClient from "./BattlecardClient";
 
+export const revalidate = 0;
+
+
 export default async function BattlecardPage() {
   const { userId } = await auth();
 

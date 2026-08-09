@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { supabase } from '@/lib/supabase';
 
+export const revalidate = 0;
+
 export default async function DashboardPage() {
   const user = await currentUser();
 
@@ -10,7 +12,6 @@ export default async function DashboardPage() {
     redirect("/sign-in");
   }
 
-  
   const hour = new Date().getHours();
   let greeting = "Good evening";
   if (hour < 12) greeting = "Good morning";
@@ -18,14 +19,17 @@ export default async function DashboardPage() {
 
   const firstName = user.firstName || "Founder";
 
-  
+  const { count } = await supabase.from("Pitch")
+    .select("*", { count: 'exact', head: true })
+    .eq("userId", user.id);
+
+  const pitchCount = count || 0;
+
   const { data: pitches } = await supabase.from("Pitch")
     .select("id, startupName, createdAt")
     .eq("userId", user.id)
     .order("createdAt", { ascending: false })
     .limit(3);
-
-  const pitchCount = pitches?.length || 0;
 
   return (
     <div className="flex-1 p-6 md:p-10 h-full overflow-y-auto bg-background">
