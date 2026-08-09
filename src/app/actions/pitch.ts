@@ -1,5 +1,7 @@
 "use server";
 
+export const maxDuration = 60; // Allow up to 60 seconds for Vercel functions
+
 import { getSupabase } from '@/lib/supabase';
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
@@ -67,6 +69,8 @@ export async function createPitch(formData: FormData) {
       problem,
       solution,
       targetMarket,
+      businessModel,
+      traction,
       deckData: generatedDeckJson
     }])
     .select()

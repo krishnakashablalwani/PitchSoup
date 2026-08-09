@@ -1,4 +1,7 @@
 import { createPitch } from "@/app/actions/pitch";
+import { SubmitButton } from "./SubmitButton";
+
+export const maxDuration = 60;
 
 export default function NewPitchPage() {
   return (
@@ -67,12 +70,7 @@ export default function NewPitchPage() {
               placeholder="Mid-to-large e-commerce fulfillment centers"
             />
           </div>
-          <button 
-            type="submit"
-            className="w-full bg-[#CCCCFF] text-black font-bold py-4 rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98] font-body-md text-lg mt-4"
-          >
-            Generate Deck
-          </button>
+          <SubmitButton />
         </form>
       </div>
     </div>
