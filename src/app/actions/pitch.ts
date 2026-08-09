@@ -74,8 +74,8 @@ export async function createPitch(formData: FormData) {
     .single();
 
   if (error || !data) {
-    console.error(error);
-    throw new Error('Failed to create pitch');
+    console.error("Supabase Error: ", error);
+    redirect(`/pitch/new?error=${encodeURIComponent(error?.message || 'Unknown Supabase error')}`);
   }
 
   redirect(`/deck/${data.id}`);

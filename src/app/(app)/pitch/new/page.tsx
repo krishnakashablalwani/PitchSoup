@@ -3,10 +3,17 @@ import { SubmitButton } from "./SubmitButton";
 
 export const maxDuration = 60;
 
-export default function NewPitchPage() {
+export default async function NewPitchPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
+  const { error } = await searchParams;
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen py-12 px-4 bg-background">
       <div className="w-full max-w-2xl bg-black border border-white/10 rounded-2xl p-8 shadow-2xl">
+        {error && (
+          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded-xl text-red-500 text-sm font-bold">
+            Database Error: {error}
+          </div>
+        )}
         <h1 className="text-3xl font-headline-lg font-bold mb-2">
           Cook New <span className="text-gradient">Pitch</span>
         </h1>
