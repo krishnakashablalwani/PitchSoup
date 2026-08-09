@@ -2,7 +2,7 @@ import { supabase } from '@/lib/supabase';
 import { auth } from '@clerk/nextjs/server';
 import Link from 'next/link';
 
-export const revalidate = 0;
+export const dynamic = 'force-dynamic';
 
 export default async function SimulatorIndexPage() {
   const { userId } = await auth();
