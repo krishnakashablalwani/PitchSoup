@@ -47,6 +47,6 @@ Generate a competitive battlecard. Return ONLY a raw JSON object (no markdown):
     return JSON.parse(cleanText);
   } catch (error) {
     console.error("Gemini Battlecard Error:", error);
-    throw new Error("Failed to generate battlecard.");
+    return null;
   }
 }

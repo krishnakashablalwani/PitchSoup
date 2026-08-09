@@ -17,7 +17,6 @@ export default async function DeckPage({ params }: { params: Promise<{ id: strin
   const { data: pitch, error } = await supabase.from('Pitch')
     .select('*')
     .eq('id', id)
-    .eq('userId', userId)
     .single();
 
   if (error || !pitch) {

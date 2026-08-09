@@ -3,14 +3,15 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export async function findInvestors(pitch: any) {
-  if (!process.env.GEMINI_API_KEY) {
-    throw new Error("GEMINI_API_KEY is not configured.");
-  }
+  try {
+    if (!process.env.GEMINI_API_KEY) {
+      throw new Error("GEMINI_API_KEY is not configured.");
+    }
 
-  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-  const prompt = `
+    const prompt = `
 You are an expert VC matchmaker. 
 Analyze the following startup pitch:
 Name: ${pitch.startupName}
@@ -31,7 +32,6 @@ Format the output strictly as a JSON array of objects with the following keys:
 Return ONLY the raw JSON array. Do not include markdown formatting like \`\`\`json.
 `;
 
-  try {
     const result = await model.generateContent(prompt);
     let text = result.response.text();
     text = text.replace(/```json/g, "").replace(/```/g, "").trim();
@@ -39,6 +39,6 @@ Return ONLY the raw JSON array. Do not include markdown formatting like \`\`\`js
     return JSON.parse(text);
   } catch (error) {
     console.error("Gemini Investor Match Error:", error);
-    throw new Error("Failed to generate investor matches.");
+    return [];
   }
 }
