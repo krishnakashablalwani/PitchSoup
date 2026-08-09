@@ -4,13 +4,10 @@ import { supabase } from '@/lib/supabase';
 import { auth } from '@clerk/nextjs/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
-
 export async function chatWithCoach(pitchId: string, history: { role: string, text: string }[]) {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
-  
   const { data: pitch, error } = await supabase.from('Pitch')
     .select('*')
     .eq('id', pitchId)
@@ -19,6 +16,11 @@ export async function chatWithCoach(pitchId: string, history: { role: string, te
 
   if (error || !pitch) throw new Error("Pitch not found");
 
+  if (!process.env.GEMINI_API_KEY) {
+    throw new Error("GEMINI_API_KEY is not configured.");
+  }
+
+  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
   const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
   
