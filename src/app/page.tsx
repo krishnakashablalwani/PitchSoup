@@ -53,7 +53,6 @@ export default function LandingPage() {
         <SolutionSection />
         <FeaturesSection />
         <TestimonialsSection />
-        <PricingSection />
         <FinalCTASection />
       </main>
 
@@ -651,66 +650,6 @@ function TestimonialsSection() {
               </div>
             </motion.div>
           ))}
-        </motion.div>
-      </div>
-    </section>
-  );
-}
-
-function PricingSection() {
-  return (
-    <section className="w-full py-24 bg-bg-secondary relative border-t border-border-subtle">
-      <div className="max-w-4xl mx-auto px-6 md:px-12">
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={fadeUp}
-          className="text-center mb-16"
-        >
-          <span className="text-sienna-brown font-semibold tracking-widest uppercase text-xs mb-3 block">Pricing</span>
-          <h2 className="font-serif text-[2rem] md:text-[2.5rem] text-text-primary mb-4 leading-tight">
-            Simple, founder-friendly pricing.
-          </h2>
-        </motion.div>
-
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={fadeUp}
-          className="bg-bg-primary rounded-[32px] border border-border-subtle p-8 md:p-12 flex flex-col md:flex-row gap-8 items-center justify-between shadow-subtle-2"
-        >
-          <div className="flex flex-col">
-            <h3 className="font-sans text-[1.25rem] font-bold text-text-primary mb-2">Pro Kitchen Access</h3>
-            <p className="text-text-secondary mb-6 font-light">Everything you need to raise your seed round.</p>
-            <ul className="space-y-3">
-              {[
-                "Unlimited AI Pitch Generations",
-                "Unlimited Q&A Simulator Sessions",
-                "Financial Modeling & TAM Calculator",
-                "Export to PDF & PowerPoint",
-              ].map((item, i) => (
-                <li key={i} className="flex items-center text-text-primary text-[14px]">
-                  <Sparkles className="w-4 h-4 text-sienna-brown mr-3" />
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className="flex flex-col items-center bg-bg-card p-8 rounded-2xl border border-border-subtle min-w-[250px]">
-            <span className="text-text-tertiary font-semibold uppercase tracking-wider text-[12px] mb-2">Lifetime Deal</span>
-            <div className="flex items-baseline gap-1 mb-6">
-              <span className="text-[2.5rem] font-serif text-text-primary leading-none">$49</span>
-              <span className="text-text-secondary text-[14px]">/once</span>
-            </div>
-            <Link
-              href="/sign-up"
-              className="w-full py-3 bg-ink-black text-paper-white text-center font-semibold rounded-buttons hover:bg-ink-black/90 transition-colors"
-            >
-              Get Access
-            </Link>
-          </div>
         </motion.div>
       </div>
     </section>
