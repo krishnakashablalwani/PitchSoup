@@ -52,7 +52,6 @@ export default function LandingPage() {
         <ProblemSection />
         <SolutionSection />
         <FeaturesSection />
-        <TestimonialsSection />
         <FinalCTASection />
       </main>
 
@@ -579,82 +578,6 @@ function FeatureRow({
   );
 }
 
-function TestimonialsSection() {
-  const testimonials = [
-    {
-      quote: "I spent three weeks trying to build a deck that told the right story. PitchSoup generated a better narrative structure in 45 seconds.",
-      author: "Sarah J.",
-      role: "Founder, Fintech SaaS",
-    },
-    {
-      quote: "The Q&A Simulator is brutal in the best way possible. It asked me the exact same TAM questions that Andreessen Horowitz did the next day.",
-      author: "Michael T.",
-      role: "CEO, AI Infrastructure",
-    },
-    {
-      quote: "Finally, a tool that understands that the business logic matters more than pretty gradients. It actually helped me refine my GTM strategy.",
-      author: "Elena R.",
-      role: "Co-Founder, HealthTech",
-    },
-  ];
-
-  return (
-    <section className="w-full py-24 bg-bg-primary relative border-t border-border-subtle">
-      <div className="max-w-6xl mx-auto px-6 md:px-12">
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={fadeUp}
-          className="text-center mb-16"
-        >
-          <span className="text-sienna-brown font-semibold tracking-widest uppercase text-xs mb-3 block">Wall of Love</span>
-          <h2 className="font-serif text-[2rem] md:text-[2.5rem] text-text-primary mb-4 leading-tight">
-            Founders who cooked with us.
-          </h2>
-        </motion.div>
-
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={staggerContainer}
-          className="grid md:grid-cols-3 gap-6"
-        >
-          {testimonials.map((t, i) => (
-            <motion.div
-              key={i}
-              variants={fadeUp}
-              className="bg-bg-card p-8 rounded-cards border border-border-subtle flex flex-col justify-between hover:shadow-subtle-2 transition-shadow"
-            >
-              <div className="mb-6">
-                <div className="flex gap-1 mb-4">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <svg key={star} className="w-4 h-4 text-sienna-brown" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                  ))}
-                </div>
-                <p className="font-sans text-[0.95rem] text-text-secondary leading-relaxed italic">
-                  "{t.quote}"
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-mist-gray flex items-center justify-center font-bold text-text-tertiary">
-                  {t.author.charAt(0)}
-                </div>
-                <div className="flex flex-col">
-                  <span className="font-sans font-semibold text-[14px] text-text-primary">{t.author}</span>
-                  <span className="font-sans text-[12px] text-text-tertiary">{t.role}</span>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
-      </div>
-    </section>
-  );
-}
 
 function FinalCTASection() {
   return (
