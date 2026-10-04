@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     const { data: pitch, error: fetchError } = await supabase.from('Pitch')
       .select('*')
       .eq('id', pitchId)
-      .eq('userId', userId)
+      .in('userId', [userId, 'all-users'])
       .single();
 
     if (fetchError || !pitch) {
@@ -32,10 +32,10 @@ export async function POST(req: NextRequest) {
     }
 
     // Call Gemini
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro-latest', generationConfig: { responseMimeType: "application/json" } });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash', generationConfig: { responseMimeType: "application/json" } });
     
     const prompt = `You are an expert Silicon Valley VC and pitch deck consultant.
-Given a startup idea, output a JSON object representing exactly 8 pitch deck slides.
+Given a startup idea, output a JSON object representing exactly 12 pitch deck slides.
 Return ONLY valid raw JSON without markdown formatting, code blocks, or triple backticks.
 
 IMPORTANT: Do not use placeholders like "Gemini generating breakdown...". You MUST generate realistic, thoughtful content, numbers, and actionable insights based on the provided inputs. If estimating a market size (TAM/SAM/SOM) or financial projections, provide actual estimated dollar amounts and demographics.
@@ -47,29 +47,28 @@ Solution: ${pitch.solution}
 Target Market: ${pitch.targetMarket}
 
 Schema:
-{
-  "startupName": "string",
-  "oneLiner": "string",
-  "slides": [
-    {
-      "slideNumber": number,
-      "title": "string",
-      "headline": "string",
-      "bulletPoints": ["string"],
-      "keyMetricOrTip": "string"
-    }
-  ]
-}
+[
+  {
+    "title": "string",
+    "content": ["string"],
+    "speakerNotes": "string",
+    "graphicsSuggestion": "string"
+  }
+]
 
-Slide structure:
+Ensure the array contains exactly 12 slide objects, covering ALL of the following topics comprehensively in a logical order:
 1. Title & One-Liner
 2. The Problem
 3. The Solution
-4. Market Opportunity (TAM/SAM/SOM)
-5. Competitor Matrix (Identify 3 real/hypothetical competitors and explain your unfair advantage)
-6. Business Model & Traction Strategy
-7. 3-Year Financial Projections (ARR, CAC, LTV estimates)
-8. Unfair Advantage / Moat & The Ask
+4. Key Features & Capabilities
+5. Market Size & Demographics (TAM/SAM/SOM)
+6. Go-To-Market (GTM) & Sales Strategy
+7. Research, Feasibility & Technical Viability (Why now? Is it possible?)
+8. Business Model & Pricing
+9. Competitive Analysis (Competitors vs Us)
+10. 3-Year Financial Projections (ARR, CAC, LTV)
+11. Traction & Roadmap
+12. Unfair Advantage / Moat & The Ask (Funding needed)
 `;
 
     const result = await model.generateContent(prompt);

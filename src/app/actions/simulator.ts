@@ -1,6 +1,6 @@
 "use server";
 
-import { supabase } from '@/lib/supabase';
+import { getPitchById } from '@/lib/mockPitch';
 import { auth } from '@clerk/nextjs/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
@@ -9,12 +9,8 @@ export async function chatWithCoach(pitchId: string, history: { role: string, te
     const { userId } = await auth();
     if (!userId) throw new Error("Unauthorized");
 
-    const { data: pitch, error } = await supabase.from('Pitch')
-      .select('*')
-      .eq('id', pitchId)
-      .single();
-
-    if (error || !pitch) throw new Error("Pitch not found. " + (error?.message || ''));
+    const pitch = await getPitchById(pitchId);
+    if (!pitch) throw new Error("Pitch not found.");
 
     if (!process.env.GEMINI_API_KEY) {
       throw new Error("GEMINI_API_KEY is not configured.");

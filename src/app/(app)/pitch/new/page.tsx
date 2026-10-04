@@ -1,84 +1,44 @@
-import { createPitch } from "@/app/actions/pitch";
-import { SubmitButton } from "./SubmitButton";
+import PitchForm from "./PitchForm";
+import { Sparkles } from "lucide-react";
 
 export const maxDuration = 60;
 
-export default async function NewPitchPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
+export default async function NewPitchPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
   const { error } = await searchParams;
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen py-12 px-4 bg-background">
-      <div className="w-full max-w-2xl bg-black border border-white/10 rounded-2xl p-8 shadow-2xl">
+    <div className="flex-1 min-h-screen bg-bg-primary text-text-primary p-6 md:p-10 overflow-y-auto">
+      <div className="max-w-3xl w-full mx-auto space-y-6">
+        {/* Editorial Header */}
+        <header className="border-b border-border-subtle pb-6">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-blush-peach/40 text-sienna-brown flex items-center justify-center shrink-0">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <div>
+              <h1 className="font-serif text-2xl md:text-3xl text-text-primary font-medium tracking-tight">
+                Cook New Pitch
+              </h1>
+              <p className="text-text-secondary text-sm mt-0.5 font-sans">
+                Provide your core startup details, and we will generate a compelling 10-slide VC deck.
+              </p>
+            </div>
+          </div>
+        </header>
+
         {error && (
-          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded-xl text-red-500 text-sm font-bold">
+          <div className="p-4 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-600 dark:text-rose-400 text-xs font-medium">
             Database Error: {error}
           </div>
         )}
-        <h1 className="text-3xl font-headline-lg font-bold mb-2">
-          Cook New <span className="text-gradient">Pitch</span>
-        </h1>
-        <p className="text-muted-foreground mb-8 font-body-md text-lg">
-          Provide your core startup details, and we will generate a compelling 10-slide VC deck.
-        </p>
-        
-        <form action={createPitch} className="space-y-6">
-          <div>
-            <label className="block text-sm font-label-caps mb-2 text-white/80">Startup Name</label>
-            <input 
-              required
-              name="startupName"
-              className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white focus:outline-none focus:ring-2 focus:ring-[#CCCCFF] transition-all font-body-md"
-              placeholder="e.g. NextGen Robotics"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-label-caps mb-2 text-white/80">The Core Problem</label>
-            <textarea 
-              required
-              name="problem"
-              rows={3}
-              className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white focus:outline-none focus:ring-2 focus:ring-[#CCCCFF] transition-all font-body-md resize-none"
-              placeholder="Supply chains are inefficient due to manual tracking..."
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-label-caps mb-2 text-white/80">Your Solution & Tech Stack</label>
-            <textarea 
-              required
-              name="solution"
-              rows={3}
-              className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white focus:outline-none focus:ring-2 focus:ring-[#CCCCFF] transition-all font-body-md resize-none"
-              placeholder="An AI-driven autonomous robotic sorting facility powered by..."
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-label-caps mb-2 text-white/80">Business Model</label>
-            <input 
-              required
-              name="businessModel"
-              className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white focus:outline-none focus:ring-2 focus:ring-[#CCCCFF] transition-all font-body-md"
-              placeholder="e.g. B2B SaaS, Marketplace, D2C"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-label-caps mb-2 text-white/80">Traction / Validation</label>
-            <input 
-              name="traction"
-              className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white focus:outline-none focus:ring-2 focus:ring-[#CCCCFF] transition-all font-body-md"
-              placeholder="e.g. $10k MRR, 50k Waitlist, Beta Live"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-label-caps mb-2 text-white/80">Target Market</label>
-            <input 
-              required
-              name="targetMarket"
-              className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white focus:outline-none focus:ring-2 focus:ring-[#CCCCFF] transition-all font-body-md"
-              placeholder="Mid-to-large e-commerce fulfillment centers"
-            />
-          </div>
-          <SubmitButton />
-        </form>
+
+        <div className="bg-bg-floating border border-border-subtle rounded-2xl p-6 md:p-8 shadow-subtle">
+          <PitchForm />
+        </div>
       </div>
     </div>
   );

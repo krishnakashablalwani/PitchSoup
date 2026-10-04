@@ -1,20 +1,65 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { deletePitch, updatePitch } from "@/app/actions/pitchCrud";
-
+import { useRouter } from "next/navigation";
+import { deletePitch, updatePitch, updatePitchDeckData } from "@/app/actions/pitchCrud";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Maximize2,
+  FileDown,
+  Share2,
+  Volume2,
+  Square,
+  FileText,
+  Flame,
+  MessageSquare,
+  ExternalLink,
+  Edit3,
+  Trash2,
+  PanelLeftClose,
+  PanelLeft,
+  Check,
+  Sparkles,
+  MoreVertical,
+  Layers,
+  Image as ImageIcon,
+  Globe,
+} from "lucide-react";
+import { SlideVisual } from "@/components/deck/SlideVisual";
 
 interface Slide {
   title: string;
   content: string[];
   speakerNotes: string;
+  graphicsSuggestion?: string;
+  imageUrl?: string;
+  visualType?: string;
 }
 
-export default function DeckClient({ pitch, deckData }: { pitch: any, deckData: Slide[] }) {
+export default function DeckClient({
+  pitch,
+  deckData,
+}: {
+  pitch: any;
+  deckData: Slide[];
+}) {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [showSlideList, setShowSlideList] = useState(false);
+  const [showNotes, setShowNotes] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const [isPresenting, setIsPresenting] = useState(false);
+  const [showNotesInPresent, setShowNotesInPresent] = useState(false);
+  const [isExportingPDF, setIsExportingPDF] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isExiting, setIsExiting] = useState(false);
+  const router = useRouter();
+
   const [editForm, setEditForm] = useState({
     startupName: pitch.startupName || "",
     problem: pitch.problem || "",
@@ -22,23 +67,125 @@ export default function DeckClient({ pitch, deckData }: { pitch: any, deckData: 
     targetMarket: pitch.targetMarket || "",
   });
 
-  const slides = deckData && deckData.length > 0 ? deckData : [
-    {
-      title: "THE PROBLEM",
-      content: [pitch.problem],
-      speakerNotes: "Start with a strong hook about the problem."
-    },
-    {
-      title: "THE SOLUTION",
-      content: [pitch.solution, `Targeting: ${pitch.targetMarket}`],
-      speakerNotes: "Introduce the solution clearly."
-    }
-  ];
+  const [slides, setSlides] = useState<Slide[]>(
+    deckData && deckData.length > 0
+      ? deckData
+      : [
+          {
+            title: "The Problem",
+            content: [pitch.problem],
+            speakerNotes: "Start with a strong hook about the problem.",
+          },
+          {
+            title: "The Solution",
+            content: [pitch.solution, `Targeting: ${pitch.targetMarket}`],
+            speakerNotes: "Introduce the solution clearly.",
+          },
+        ]
+  );
 
-  const slide = slides[currentSlide];
+  useEffect(() => {
+    if (deckData && deckData.length > 0) {
+      setSlides(deckData);
+    }
+  }, [deckData]);
+
+  const handleAttachImage = async (imageUrl: string) => {
+    const updated = slides.map((s, idx) =>
+      idx === currentSlide ? { ...s, imageUrl } : s
+    );
+    setSlides(updated);
+    try {
+      await updatePitchDeckData(pitch.id, updated);
+    } catch (err) {
+      console.error("Failed to save attached image", err);
+    }
+  };
+
+  const handleRemoveImage = async () => {
+    const updated = slides.map((s, idx) =>
+      idx === currentSlide ? { ...s, imageUrl: undefined } : s
+    );
+    setSlides(updated);
+    try {
+      await updatePitchDeckData(pitch.id, updated);
+    } catch (err) {
+      console.error("Failed to remove attached image", err);
+    }
+  };
+
+  const slide = slides[currentSlide] || slides[0];
+
+  // Keyboard navigation for presentation mode and general deck view
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (["INPUT", "TEXTAREA"].includes((e.target as HTMLElement)?.tagName)) return;
+
+      if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") {
+        e.preventDefault();
+        setCurrentSlide((prev) => Math.min(slides.length - 1, prev + 1));
+      } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
+        e.preventDefault();
+        setCurrentSlide((prev) => Math.max(0, prev - 1));
+      } else if (e.key === "Escape") {
+        setIsPresenting(false);
+        setIsEditing(false);
+        setShowMoreMenu(false);
+      } else if (e.key.toLowerCase() === "n") {
+        if (isPresenting) {
+          setShowNotesInPresent((prev) => !prev);
+        } else {
+          setShowNotes((prev) => !prev);
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [slides.length, isPresenting]);
 
   const handleDelete = async () => {
     await deletePitch(pitch.id);
+  };
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+    }
+    return () => {
+      if (typeof window !== "undefined" && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, [currentSlide, isPresenting]);
+
+  const toggleSpeech = () => {
+    if (typeof window === "undefined" || !window.speechSynthesis) return;
+
+    if (isSpeaking) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+    } else {
+      if (!slide.speakerNotes) return;
+      const utterance = new SpeechSynthesisUtterance(slide.speakerNotes);
+      const voices = window.speechSynthesis.getVoices();
+      const preferredVoice = voices.find(
+        (v) =>
+          v.name.includes("Google") ||
+          v.name.includes("Premium") ||
+          v.name.includes("Natural"),
+      );
+      if (preferredVoice) utterance.voice = preferredVoice;
+
+      utterance.rate = 1.0;
+      utterance.pitch = 1.0;
+      utterance.onend = () => setIsSpeaking(false);
+      utterance.onerror = () => setIsSpeaking(false);
+
+      setIsSpeaking(true);
+      window.speechSynthesis.speak(utterance);
+    }
   };
 
   const handleUpdate = async () => {
@@ -51,57 +198,543 @@ export default function DeckClient({ pitch, deckData }: { pitch: any, deckData: 
     setIsEditing(false);
   };
 
+  const handleShareLink = () => {
+    const url = `${window.location.origin}/p/${pitch.id}`;
+    navigator.clipboard.writeText(url);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2500);
+  };
+
+  const handleExportPDF = async () => {
+    setIsExportingPDF(true);
+    try {
+      const html2canvas = (await import("html2canvas")).default;
+      const { jsPDF } = await import("jspdf");
+
+      const pdf = new jsPDF({
+        orientation: "landscape",
+        unit: "px",
+        format: [1280, 720],
+      });
+
+      const container = document.createElement("div");
+      container.style.position = "fixed";
+      container.style.left = "-9999px";
+      container.style.top = "0";
+      container.style.width = "1280px";
+      container.style.height = "720px";
+      container.style.zIndex = "-1";
+      document.body.appendChild(container);
+
+      for (let i = 0; i < slides.length; i++) {
+        const s = slides[i];
+        container.innerHTML = `
+          <div style="width: 1280px; height: 720px; background: #ffffff; color: #17191c; padding: 70px 90px; display: flex; flex-direction: column; justify-content: space-between; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; box-sizing: border-box; position: relative;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0,0,0,0.08); padding-bottom: 20px;">
+              <span style="font-size: 15px; font-weight: 600; letter-spacing: 1.5px; color: #5d2a1a; text-transform: uppercase;">${pitch.startupName}</span>
+              <span style="font-size: 13px; font-weight: 500; color: #777b86; font-family: monospace;">SLIDE ${i + 1} OF ${slides.length}</span>
+            </div>
+
+            <div style="margin: 40px 0; flex: 1; display: flex; flex-direction: column; justify-content: center;">
+              <h1 style="font-size: 38px; font-weight: 700; color: #17191c; margin-bottom: 35px; letter-spacing: -0.5px; line-height: 1.2;">${s.title}</h1>
+              <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 20px;">
+                ${s.content
+                  .map(
+                    (point) => `
+                  <li style="display: flex; align-items: flex-start; font-size: 20px; line-height: 1.5; color: #40444f;">
+                    <span style="color: #5d2a1a; margin-right: 16px; font-weight: bold;">•</span>
+                    <span>${point}</span>
+                  </li>
+                `,
+                  )
+                  .join("")}
+              </ul>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(0,0,0,0.08); padding-top: 20px; font-size: 12px; color: #777b86;">
+              <span>PitchSoup Investor Presentation</span>
+              <span>Confidential</span>
+            </div>
+          </div>
+        `;
+
+        const canvas = await html2canvas(container, {
+          scale: 1.5,
+          useCORS: true,
+          backgroundColor: "#ffffff",
+          logging: false,
+        });
+
+        const imgData = canvas.toDataURL("image/jpeg", 0.95);
+        if (i > 0) pdf.addPage([1280, 720], "landscape");
+        pdf.addImage(imgData, "JPEG", 0, 0, 1280, 720);
+      }
+
+      document.body.removeChild(container);
+      pdf.save(
+        `${pitch.startupName.toLowerCase().replace(/[^a-z0-9]/g, "-")}-deck.pdf`,
+      );
+    } catch (err) {
+      console.error("PDF Export error:", err);
+    }
+    setIsExportingPDF(false);
+  };
+
   return (
-    <div className="flex-1 flex flex-col p-6 h-full bg-background overflow-hidden">
-      <header className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-headline-md font-bold">{pitch.startupName}</h1>
-          <p className="text-muted-foreground font-body-md text-sm">Generated Pitch Deck</p>
+    <div className={`flex-1 flex flex-col h-screen bg-bg-primary text-text-primary overflow-hidden transition-all duration-300 ease-in-out ${isExiting ? "opacity-0 scale-[0.98]" : "opacity-100 scale-100"}`}>
+      {/* Editorial Top Bar */}
+      <header className="h-14 px-4 md:px-6 border-b border-border-subtle bg-bg-primary/95 backdrop-blur-md flex items-center justify-between shrink-0 z-30">
+        
+        {/* Left: Back Link & Deck Title */}
+        <div className="flex items-center gap-3 min-w-0">
+          <Link
+            href="/dashboard"
+            onClick={(e) => {
+              e.preventDefault();
+              setIsExiting(true);
+              setTimeout(() => router.push("/dashboard"), 300);
+            }}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg hover:bg-bg-secondary text-text-secondary hover:text-text-primary text-xs font-medium transition-colors"
+            title="Back to Dashboard"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            <span className="hidden sm:inline">Dashboard</span>
+          </Link>
+
+          <div className="h-4 w-[1px] bg-border-subtle shrink-0" />
+
+          <h1 className="font-serif text-[15px] md:text-[17px] text-text-primary font-medium tracking-tight truncate max-w-[180px] md:max-w-xs">
+            {pitch.startupName}
+          </h1>
         </div>
-        <div className="flex items-center gap-3">
+
+        {/* Center: Slide Jumper & Audio Voiceover Pill */}
+        <div className="flex items-center gap-1.5 bg-bg-secondary border border-border-subtle/80 rounded-full px-2 py-1 shadow-xs">
           <button
-            onClick={() => setIsEditing(!isEditing)}
-            className="px-4 py-2 rounded-xl bg-foreground/5 hover:bg-foreground/10 border border-border text-sm font-semibold transition-colors flex items-center gap-2"
+            onClick={() => setCurrentSlide(Math.max(0, currentSlide - 1))}
+            disabled={currentSlide === 0}
+            className="p-1 rounded-full hover:bg-bg-floating disabled:opacity-25 text-text-secondary hover:text-text-primary transition-colors"
+            title="Previous Slide (← / PageUp)"
           >
-            <span className="material-symbols-outlined text-[18px]">edit</span>
-            Edit
-          </button>
-          <button
-            onClick={() => setShowDeleteConfirm(true)}
-            className="px-4 py-2 rounded-xl bg-destructive/10 hover:bg-destructive/20 border border-destructive/20 text-destructive text-sm font-semibold transition-colors flex items-center gap-2"
-          >
-            <span className="material-symbols-outlined text-[18px]">delete</span>
-            Delete
+            <ChevronLeft className="w-4 h-4" />
           </button>
 
-          <Link 
-            href={`/simulator?pitchId=${pitch.id}`} 
-            className="bg-primary text-black px-6 py-2.5 rounded-xl font-semibold transition-transform hover:scale-105 flex items-center gap-2 text-sm"
+          <span className="text-[12px] font-mono font-medium text-text-primary px-2 min-w-[70px] text-center select-none">
+            {String(currentSlide + 1).padStart(2, "0")} / {String(slides.length).padStart(2, "0")}
+          </span>
+
+          <button
+            onClick={() => setCurrentSlide(Math.min(slides.length - 1, currentSlide + 1))}
+            disabled={currentSlide === slides.length - 1}
+            className="p-1 rounded-full hover:bg-bg-floating disabled:opacity-25 text-text-secondary hover:text-text-primary transition-colors"
+            title="Next Slide (→ / Space)"
           >
-            <span className="material-symbols-outlined text-[18px]">record_voice_over</span>
-            Practice Pitch
-          </Link>
+            <ChevronRight className="w-4 h-4" />
+          </button>
+
+          {slide.speakerNotes && (
+            <>
+              <div className="h-3 w-[1px] bg-border-subtle/80 mx-0.5" />
+              <button
+                onClick={toggleSpeech}
+                className={`p-1 rounded-full transition-colors flex items-center justify-center ${
+                  isSpeaking
+                    ? "text-rose-600 bg-rose-500/15"
+                    : "text-text-muted hover:text-text-primary hover:bg-bg-floating"
+                }`}
+                title={isSpeaking ? "Stop voice-over" : "Listen to speaker notes"}
+              >
+                {isSpeaking ? (
+                  <Square className="w-3.5 h-3.5 fill-current" />
+                ) : (
+                  <Volume2 className="w-3.5 h-3.5" />
+                )}
+              </button>
+            </>
+          )}
+        </div>
+
+        {/* Right: Consolidated Action Toolbar */}
+        <div className="flex items-center gap-1.5">
+          {/* Slide List Toggle */}
+          <button
+            onClick={() => setShowSlideList(!showSlideList)}
+            className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 ${
+              showSlideList
+                ? "bg-bg-secondary text-text-primary border border-border-subtle"
+                : "text-text-secondary hover:bg-bg-secondary hover:text-text-primary"
+            }`}
+            title="Toggle Slide Thumbnails (S)"
+          >
+            <Layers className="w-3.5 h-3.5" />
+            <span className="hidden md:inline">Slides</span>
+          </button>
+
+          {/* Speaker Notes Toggle */}
+          <button
+            onClick={() => setShowNotes(!showNotes)}
+            className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 ${
+              showNotes
+                ? "bg-bg-secondary text-text-primary border border-border-subtle"
+                : "text-text-secondary hover:bg-bg-secondary hover:text-text-primary"
+            }`}
+            title="Toggle Speaker Notes (N)"
+          >
+            <FileText className="w-3.5 h-3.5" />
+            <span className="hidden md:inline">Notes</span>
+          </button>
+
+          {/* Export PDF */}
+          <button
+            onClick={handleExportPDF}
+            disabled={isExportingPDF}
+            className="p-1.5 md:px-2.5 md:py-1.5 rounded-lg border border-border-subtle hover:bg-bg-secondary text-text-secondary hover:text-text-primary text-xs font-medium transition-colors flex items-center gap-1.5 disabled:opacity-50"
+            title="Export as PDF"
+          >
+            <FileDown className="w-3.5 h-3.5" />
+            <span className="hidden lg:inline">PDF</span>
+          </button>
+
+          {/* Share Link */}
+          <button
+            onClick={handleShareLink}
+            className="p-1.5 md:px-2.5 md:py-1.5 rounded-lg border border-border-subtle hover:bg-bg-secondary text-text-secondary hover:text-text-primary text-xs font-medium transition-colors flex items-center gap-1.5"
+            title="Copy Public Link"
+          >
+            {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Share2 className="w-3.5 h-3.5" />}
+            <span className="hidden lg:inline">{copiedLink ? "Copied" : "Share"}</span>
+          </button>
+
+
+          {/* More Tools Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => setShowMoreMenu(!showMoreMenu)}
+              className="p-1.5 rounded-lg border border-border-subtle hover:bg-bg-secondary text-text-secondary hover:text-text-primary transition-colors flex items-center justify-center"
+              title="More Actions"
+            >
+              <MoreVertical className="w-3.5 h-3.5" />
+            </button>
+
+            {showMoreMenu && (
+              <>
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setShowMoreMenu(false)}
+                />
+                <div className="absolute right-0 mt-2 w-56 bg-bg-floating border border-border-subtle rounded-xl shadow-subtle-3 p-1.5 z-50 text-[13px] font-sans">
+                  <Link
+                    href={`/tools/stress-test?pitchId=${pitch.id}`}
+                    onClick={() => setShowMoreMenu(false)}
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-bg-secondary text-text-primary transition-colors"
+                  >
+                    <Flame className="w-4 h-4 text-rose-500" />
+                    <span>VC Stress Test</span>
+                  </Link>
+
+                  <Link
+                    href={`/simulator/${pitch.id}`}
+                    onClick={() => setShowMoreMenu(false)}
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-bg-secondary text-text-primary transition-colors"
+                  >
+                    <MessageSquare className="w-4 h-4 text-sienna-brown" />
+                    <span>Diligence Q&A Simulator</span>
+                  </Link>
+
+                  <Link
+                    href={`/p/${pitch.id}`}
+                    target="_blank"
+                    onClick={() => setShowMoreMenu(false)}
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-bg-secondary text-text-primary transition-colors"
+                  >
+                    <ExternalLink className="w-4 h-4 text-text-secondary" />
+                    <span>Public Pitch Deck</span>
+                  </Link>
+
+                  <div className="h-px bg-border-subtle my-1" />
+
+                  <button
+                    onClick={() => {
+                      setIsEditing(true);
+                      setShowMoreMenu(false);
+                    }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-bg-secondary text-text-primary text-left transition-colors"
+                  >
+                    <Edit3 className="w-4 h-4 text-text-secondary" />
+                    <span>Edit Pitch Info</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setShowDeleteConfirm(true);
+                      setShowMoreMenu(false);
+                    }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-rose-500/10 text-rose-600 dark:text-rose-400 text-left transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    <span>Delete Deck</span>
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Primary CTA: Present */}
+          <button
+            onClick={() => setIsPresenting(true)}
+            className="px-3.5 py-1.5 rounded-xl bg-ink-black text-paper-white font-medium text-xs hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 shadow-sm ml-1"
+            title="Start Fullscreen Presentation"
+          >
+            <Maximize2 className="w-3.5 h-3.5" />
+            <span>Present</span>
+          </button>
         </div>
       </header>
 
+      {/* Main Studio Work Area */}
+      <div className="flex-1 flex overflow-hidden relative">
+        
+        {/* Left Drawer: Collapsible Slide Thumbnails */}
+        <AnimatePresence initial={false}>
+          {showSlideList && (
+            <motion.aside
+              initial={{ width: 0, opacity: 0 }}
+              animate={{ width: 220, opacity: 1 }}
+              exit={{ width: 0, opacity: 0 }}
+              transition={{ duration: 0.2, ease: "easeInOut" }}
+              className="h-full border-r border-border-subtle bg-bg-secondary/70 flex flex-col shrink-0 overflow-hidden z-20"
+            >
+              <div className="p-3 border-b border-border-subtle flex items-center justify-between text-xs font-semibold text-text-secondary uppercase tracking-wider">
+                <span>Slides</span>
+                <span className="text-text-muted font-mono">{slides.length}</span>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-2.5 space-y-1 no-scrollbar">
+                {slides.map((s, idx) => {
+                  const isCurrent = currentSlide === idx;
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => setCurrentSlide(idx)}
+                      className={`w-full text-left p-2 rounded-xl transition-all flex items-center gap-2.5 text-[12.5px] ${
+                        isCurrent
+                          ? "bg-bg-floating text-text-primary shadow-subtle border border-border-subtle font-medium"
+                          : "text-text-secondary hover:bg-bg-floating/60 hover:text-text-primary"
+                      }`}
+                    >
+                      <span
+                        className={`text-[10px] font-mono w-4 shrink-0 ${
+                          isCurrent ? "text-sienna-brown font-bold" : "text-text-muted"
+                        }`}
+                      >
+                        {String(idx + 1).padStart(2, "0")}
+                      </span>
+                      <span className="truncate">{s.title}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </motion.aside>
+          )}
+        </AnimatePresence>
+
+        {/* Center Stage: The Slide Canvas */}
+        <main className="flex-1 flex flex-col items-center justify-center p-4 md:p-6 lg:p-8 overflow-hidden bg-bg-primary relative">
+          
+          {/* Subtle Canvas Backdrop Glow */}
+          <div className="absolute inset-0 pointer-events-none opacity-25 bg-[radial-gradient(circle_at_center,var(--color-blush-peach)_0%,transparent_70%)]" />
+
+          {/* 16:9 Presentation Card */}
+          <div className="w-full max-w-4xl lg:max-w-5xl aspect-[16/9] max-h-[calc(100vh-120px)] bg-bg-floating border border-border-subtle rounded-2xl p-6 lg:p-8 shadow-subtle-2 flex flex-col justify-between relative z-10 select-text transition-all overflow-hidden">
+            
+            {/* Slide Header */}
+            <div className="flex items-center justify-between border-b border-border-subtle/80 pb-2.5 mb-2">
+              <span className="text-[11px] font-mono tracking-widest uppercase text-sienna-brown font-medium">
+                {pitch.startupName}
+              </span>
+              <span className="text-[11px] font-mono text-text-muted">
+                {String(currentSlide + 1).padStart(2, "0")} / {String(slides.length).padStart(2, "0")}
+              </span>
+            </div>
+
+            {/* Slide Content Core: Balanced 2-Column Split */}
+            <div className="my-auto py-2 grid grid-cols-1 md:grid-cols-12 gap-6 lg:gap-8 items-center flex-1 overflow-hidden">
+              {/* Left Column: Title & Bullet Points (7 cols) */}
+              <div className="md:col-span-7 flex flex-col justify-center pr-2">
+                <h2 className="font-serif text-lg md:text-xl lg:text-2xl text-text-primary font-normal tracking-tight leading-snug mb-4">
+                  {slide.title}
+                </h2>
+
+                <ul className="space-y-2.5">
+                  {slide.content.map((point, idx) => (
+                    <li
+                      key={idx}
+                      className="flex items-start gap-3 text-[13.5px] lg:text-[14.5px] text-text-secondary leading-relaxed font-sans"
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full bg-sienna-brown mt-2 shrink-0" />
+                      <span>{point}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="md:col-span-5 h-full flex flex-col justify-center items-center">
+                <SlideVisual
+                  slide={slide}
+                  slideIndex={currentSlide}
+                  startupName={pitch.startupName}
+                />
+              </div>
+            </div>
+
+            {/* Slide Footer */}
+            <div className="flex items-center justify-between border-t border-border-subtle/80 pt-2.5 mt-2 text-[10.5px] text-text-muted">
+              <span>PitchSoup Presentation Studio</span>
+              <span>Confidential • Investor Presentation</span>
+            </div>
+          </div>
+        </main>
+
+        {/* Right Drawer: Toggleable Speaker Notes */}
+        <AnimatePresence initial={false}>
+          {showNotes && (
+            <motion.aside
+              initial={{ width: 0, opacity: 0 }}
+              animate={{ width: 340, opacity: 1 }}
+              exit={{ width: 0, opacity: 0 }}
+              transition={{ duration: 0.25, ease: "easeInOut" }}
+              className="h-full border-l border-border-subtle bg-bg-secondary/70 flex flex-col shrink-0 overflow-hidden"
+            >
+              <div className="p-4 border-b border-border-subtle flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-sienna-brown" />
+                  <h3 className="text-xs font-semibold text-text-primary uppercase tracking-wider">
+                    Speaker Notes
+                  </h3>
+                </div>
+
+                <div className="flex items-center gap-1.5">
+                  {slide.speakerNotes && (
+                    <button
+                      onClick={toggleSpeech}
+                      className={`p-1.5 rounded-lg border text-xs transition-colors ${
+                        isSpeaking
+                          ? "bg-rose-500/15 border-rose-500/30 text-rose-600"
+                          : "border-border-subtle hover:bg-bg-floating text-text-secondary"
+                      }`}
+                      title={isSpeaking ? "Stop Voice" : "Play Voice"}
+                    >
+                      {isSpeaking ? <Square className="w-3.5 h-3.5 fill-current" /> : <Volume2 className="w-3.5 h-3.5" />}
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setShowNotes(false)}
+                    className="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-floating transition-colors"
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-5 text-[14px] leading-relaxed text-text-secondary font-sans space-y-4">
+                <p className="whitespace-pre-wrap">
+                  {slide.speakerNotes || "No speaker notes written for this slide."}
+                </p>
+              </div>
+
+              <div className="p-3 border-t border-border-subtle text-[11px] text-text-muted flex items-center justify-between">
+                <span>Tip: Press 'N' to toggle notes</span>
+                <span className="font-mono">Slide {currentSlide + 1}</span>
+              </div>
+            </motion.aside>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Edit Pitch Modal */}
+      {isEditing && (
+        <div className="fixed inset-0 bg-ink-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-bg-floating border border-border-subtle rounded-cards p-6 md:p-8 max-w-lg w-full shadow-subtle-3 space-y-4">
+            <h3 className="font-serif text-xl font-medium text-text-primary">
+              Edit Pitch Details
+            </h3>
+
+            <div className="space-y-3 text-[13px]">
+              <div>
+                <label className="block text-text-secondary mb-1 font-medium">Startup Name</label>
+                <input
+                  value={editForm.startupName}
+                  onChange={(e) => setEditForm({ ...editForm, startupName: e.target.value })}
+                  className="w-full bg-bg-secondary border border-border-subtle rounded-inputs p-3 text-text-primary focus:outline-none focus:ring-1 focus:ring-ink-black"
+                />
+              </div>
+
+              <div>
+                <label className="block text-text-secondary mb-1 font-medium">Target Market</label>
+                <input
+                  value={editForm.targetMarket}
+                  onChange={(e) => setEditForm({ ...editForm, targetMarket: e.target.value })}
+                  className="w-full bg-bg-secondary border border-border-subtle rounded-inputs p-3 text-text-primary focus:outline-none focus:ring-1 focus:ring-ink-black"
+                />
+              </div>
+
+              <div>
+                <label className="block text-text-secondary mb-1 font-medium">The Problem</label>
+                <textarea
+                  value={editForm.problem}
+                  onChange={(e) => setEditForm({ ...editForm, problem: e.target.value })}
+                  rows={2}
+                  className="w-full bg-bg-secondary border border-border-subtle rounded-inputs p-3 text-text-primary focus:outline-none focus:ring-1 focus:ring-ink-black resize-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-text-secondary mb-1 font-medium">Your Solution</label>
+                <textarea
+                  value={editForm.solution}
+                  onChange={(e) => setEditForm({ ...editForm, solution: e.target.value })}
+                  rows={2}
+                  className="w-full bg-bg-secondary border border-border-subtle rounded-inputs p-3 text-text-primary focus:outline-none focus:ring-1 focus:ring-ink-black resize-none"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-2.5 justify-end pt-2">
+              <button
+                onClick={() => setIsEditing(false)}
+                className="px-4 py-2 rounded-buttons border border-border-subtle hover:bg-bg-secondary text-[13px] font-medium transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleUpdate}
+                className="px-4 py-2 rounded-buttons bg-ink-black text-paper-white text-[13px] font-medium hover:scale-105 active:scale-95 transition-all"
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center">
-          <div className="glass-panel rounded-3xl p-8 max-w-md w-full mx-4 shadow-2xl">
-            <h3 className="text-xl font-bold mb-2">Delete Pitch?</h3>
-            <p className="text-muted-foreground font-body-md mb-6">
-              This will permanently delete <strong>{pitch.startupName}</strong> and all its generated slides. This action cannot be undone.
+        <div className="fixed inset-0 bg-ink-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-bg-floating border border-border-subtle rounded-cards p-6 md:p-8 max-w-md w-full shadow-subtle-3">
+            <h3 className="font-serif text-xl font-medium text-text-primary mb-2">Delete Pitch?</h3>
+            <p className="text-text-secondary text-[14px] leading-relaxed mb-6 font-sans">
+              This will permanently delete <strong>{pitch.startupName}</strong> and all its generated slides.
             </p>
-            <div className="flex gap-3 justify-end">
+            <div className="flex gap-2.5 justify-end">
               <button
                 onClick={() => setShowDeleteConfirm(false)}
-                className="px-5 py-2.5 rounded-xl bg-foreground/5 hover:bg-foreground/10 border border-border font-semibold text-sm transition-colors"
+                className="px-4 py-2 rounded-buttons border border-border-subtle hover:bg-bg-secondary text-[13px] font-medium transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleDelete}
-                className="px-5 py-2.5 rounded-xl bg-destructive text-white font-semibold text-sm transition-colors hover:bg-destructive/90"
+                className="px-4 py-2 rounded-buttons bg-rose-600 text-white text-[13px] font-medium hover:bg-rose-700 transition-colors"
               >
                 Delete Forever
               </button>
@@ -110,141 +743,136 @@ export default function DeckClient({ pitch, deckData }: { pitch: any, deckData: 
         </div>
       )}
 
-      {/* Edit Panel */}
-      {isEditing && (
-        <div className="glass-panel rounded-2xl p-6 mb-6 space-y-4">
-          <h3 className="font-bold text-lg flex items-center gap-2">
-            <span className="material-symbols-outlined text-primary">edit_note</span>
-            Edit Pitch Details
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Startup Name</label>
-              <input
-                value={editForm.startupName}
-                onChange={(e) => setEditForm({ ...editForm, startupName: e.target.value })}
-                className="w-full bg-foreground/5 border border-border rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-primary font-body-md"
-              />
+      {/* FULLSCREEN PRESENTATION MODE OVERLAY */}
+      <AnimatePresence>
+        {isPresenting && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-neutral-950 text-white flex flex-col justify-between p-8 md:p-14 select-none overflow-hidden"
+          >
+            {/* Top Presentation Bar */}
+            <div className="flex items-center justify-between z-20">
+              <div className="flex items-center gap-3">
+                <span className="font-serif font-medium text-lg text-white">
+                  {pitch.startupName}
+                </span>
+                <span className="text-xs px-2.5 py-0.5 bg-white/10 rounded-full font-mono text-white/60">
+                  {currentSlide + 1} / {slides.length}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2.5">
+                <button
+                  onClick={() => setShowNotesInPresent(!showNotesInPresent)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-sans uppercase tracking-wider border transition-all flex items-center gap-1.5 ${
+                    showNotesInPresent
+                      ? "bg-white text-black border-white font-medium"
+                      : "bg-white/10 border-white/20 text-white hover:bg-white/20"
+                  }`}
+                  title="Toggle Notes (Press 'N')"
+                >
+                  <FileText className="w-3.5 h-3.5" />
+                  <span>Notes (N)</span>
+                </button>
+
+                <button
+                  onClick={() => setIsPresenting(false)}
+                  className="px-3 py-1.5 rounded-full text-xs font-sans uppercase tracking-wider bg-white/10 hover:bg-white/20 border border-white/20 text-white transition-all flex items-center gap-1.5"
+                  title="Exit Presentation (Press Esc)"
+                >
+                  <span>Exit (Esc)</span>
+                </button>
+              </div>
             </div>
-            <div>
-              <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Target Market</label>
-              <input
-                value={editForm.targetMarket}
-                onChange={(e) => setEditForm({ ...editForm, targetMarket: e.target.value })}
-                className="w-full bg-foreground/5 border border-border rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-primary font-body-md"
-              />
+
+            {/* Main Stage Presentation Center */}
+            <div className="flex-1 flex items-center justify-center relative my-6 w-full max-w-6xl mx-auto px-4">
+              <div className="w-full grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-12 items-center">
+                {/* Left: Presentation Text */}
+                <div className="md:col-span-7 space-y-6 text-left">
+                  <h1 className="font-serif text-[2.2rem] md:text-[3rem] font-normal text-white leading-tight tracking-tight">
+                    {slide.title}
+                  </h1>
+
+                  <ul className="space-y-4">
+                    {slide.content.map((point, idx) => (
+                      <li
+                        key={idx}
+                        className="flex items-start gap-3.5 text-base md:text-lg text-neutral-300 leading-relaxed font-sans"
+                      >
+                        <span className="w-2 h-2 rounded-full bg-sienna-brown mt-2 shrink-0" />
+                        <span>{point}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Right: Attached Presentation Visual */}
+                <div className="md:col-span-5 flex justify-center items-center">
+                  <div className="w-full max-w-md bg-neutral-900/90 border border-white/10 rounded-2xl p-3 shadow-2xl">
+                    <SlideVisual
+                      slide={slide}
+                      slideIndex={currentSlide}
+                      startupName={pitch.startupName}
+                      isPresentationMode={true}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Floating Speaker Notes Panel in Presentation */}
+              <AnimatePresence>
+                {showNotesInPresent && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 20 }}
+                    className="absolute bottom-4 right-4 max-w-md w-full bg-black/85 backdrop-blur-xl border border-white/20 rounded-2xl p-6 shadow-2xl text-left"
+                  >
+                    <div className="flex items-center justify-between mb-3 text-xs uppercase tracking-wider text-neutral-400">
+                      <span>Speaker Notes</span>
+                      {slide.speakerNotes && (
+                        <button
+                          onClick={toggleSpeech}
+                          className="hover:text-white transition-colors"
+                        >
+                          {isSpeaking ? "■ Stop" : "▶ Listen"}
+                        </button>
+                      )}
+                    </div>
+                    <p className="text-sm font-sans text-neutral-200 leading-relaxed max-h-48 overflow-y-auto">
+                      {slide.speakerNotes || "No notes for this slide."}
+                    </p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
-            <div>
-              <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Problem</label>
-              <textarea
-                value={editForm.problem}
-                onChange={(e) => setEditForm({ ...editForm, problem: e.target.value })}
-                rows={3}
-                className="w-full bg-foreground/5 border border-border rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-primary font-body-md resize-none"
-              />
+
+            {/* Bottom Controls */}
+            <div className="flex items-center justify-between z-20 text-xs text-neutral-500 font-sans">
+              <span>Use ← / → keys or Space to advance</span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setCurrentSlide(Math.max(0, currentSlide - 1))}
+                  disabled={currentSlide === 0}
+                  className="p-2 rounded-full bg-white/10 hover:bg-white/20 disabled:opacity-20 text-white transition-colors"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setCurrentSlide(Math.min(slides.length - 1, currentSlide + 1))}
+                  disabled={currentSlide === slides.length - 1}
+                  className="p-2 rounded-full bg-white/10 hover:bg-white/20 disabled:opacity-20 text-white transition-colors"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
             </div>
-            <div>
-              <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Solution</label>
-              <textarea
-                value={editForm.solution}
-                onChange={(e) => setEditForm({ ...editForm, solution: e.target.value })}
-                rows={3}
-                className="w-full bg-foreground/5 border border-border rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-primary font-body-md resize-none"
-              />
-            </div>
-          </div>
-          <div className="flex gap-3 justify-end">
-            <button
-              onClick={() => setIsEditing(false)}
-              className="px-5 py-2.5 rounded-xl bg-foreground/5 hover:bg-foreground/10 border border-border font-semibold text-sm transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleUpdate}
-              className="px-5 py-2.5 rounded-xl bg-primary text-black font-semibold text-sm transition-colors hover:opacity-90"
-            >
-              Save Changes
-            </button>
-          </div>
-        </div>
-      )}
-
-      <div className="flex-1 flex gap-6 overflow-hidden">
-        {/* Left Sidebar: Slide Index */}
-        <aside className="w-64 glass-panel rounded-2xl p-4 flex flex-col h-full overflow-y-auto">
-          <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-4 pl-2">Slide Index</h2>
-          <div className="space-y-2 flex-1">
-            {slides.map((s, idx) => (
-              <button 
-                key={idx}
-                onClick={() => setCurrentSlide(idx)}
-                className={`w-full text-left p-3 rounded-xl transition-all text-sm font-body-md truncate ${
-                  currentSlide === idx 
-                    ? 'bg-foreground/10 text-foreground shadow-sm' 
-                    : 'text-muted-foreground hover:bg-foreground/5 hover:text-foreground'
-                }`}
-              >
-                {idx + 1}. {s.title}
-              </button>
-            ))}
-          </div>
-        </aside>
-
-        {/* Main Stage: Slide Presentation */}
-        <section id="deck-stage" className="flex-1 glass-panel rounded-3xl p-12 flex flex-col justify-center relative overflow-hidden shadow-sm">
-          <div className="absolute inset-0 opacity-20 pointer-events-none">
-            <div className="absolute -top-32 -right-32 w-96 h-96 bg-primary/30 rounded-full blur-[100px]" />
-            <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-secondary/30 rounded-full blur-[100px]" />
-          </div>
-
-          <div className="w-full max-w-4xl mx-auto space-y-12 relative z-10">
-            <h1 className="text-5xl font-headline-xl font-bold uppercase tracking-tight">{slide.title}</h1>
-            
-            <ul className="space-y-6">
-              {slide.content.map((point, idx) => (
-                <li key={idx} className="flex items-start text-2xl font-body-lg text-foreground/90">
-                  <span className="text-primary mr-4 mt-1 material-symbols-outlined">check_circle</span>
-                  <span>{point}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Slide Navigation Controls */}
-          <div className="absolute bottom-8 left-0 right-0 flex justify-center items-center gap-4 z-20">
-            <button 
-              onClick={() => setCurrentSlide(Math.max(0, currentSlide - 1))}
-              disabled={currentSlide === 0}
-              className="h-12 w-12 rounded-full glass-panel flex items-center justify-center hover:bg-foreground/5 disabled:opacity-50 transition-colors"
-            >
-              <span className="material-symbols-outlined">arrow_back</span>
-            </button>
-            <span className="font-mono-data text-muted-foreground">
-              {currentSlide + 1} / {slides.length}
-            </span>
-            <button 
-              onClick={() => setCurrentSlide(Math.min(slides.length - 1, currentSlide + 1))}
-              disabled={currentSlide === slides.length - 1}
-              className="h-12 w-12 rounded-full glass-panel flex items-center justify-center hover:bg-foreground/5 disabled:opacity-50 transition-colors"
-            >
-              <span className="material-symbols-outlined">arrow_forward</span>
-            </button>
-          </div>
-        </section>
-
-        {/* Right Sidebar: Speaker Notes */}
-        <aside className="w-80 glass-panel rounded-2xl p-6 flex flex-col h-full">
-          <div className="flex items-center gap-2 mb-6 text-secondary">
-            <span className="material-symbols-outlined">mic</span>
-            <h2 className="text-sm font-bold uppercase tracking-widest text-foreground">Speaker Notes</h2>
-          </div>
-          
-          <div className="flex-1 overflow-y-auto font-body-md text-foreground/80 leading-relaxed text-lg">
-            {slide.speakerNotes}
-          </div>
-        </aside>
-      </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

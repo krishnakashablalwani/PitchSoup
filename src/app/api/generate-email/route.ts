@@ -20,14 +20,14 @@ export async function POST(req: NextRequest) {
     const { data: pitch, error: fetchError } = await supabase.from('Pitch')
       .select('*')
       .eq('id', pitchId)
-      .eq('userId', userId)
+      .in('userId', [userId, 'all-users'])
       .single();
 
     if (fetchError || !pitch) {
       return NextResponse.json({ error: 'Pitch not found' }, { status: 404 });
     }
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro-latest' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
     
     const prompt = `You are an expert startup founder writing a highly effective, concise cold email to a VC.
 Draft a cold email to ${targetVC} pitching this startup.

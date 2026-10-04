@@ -2,10 +2,26 @@
 
 import { useState } from "react";
 import { scorePitch } from "@/app/actions/score";
+import { Award, Sparkles, Loader2, Lightbulb, CheckCircle2 } from "lucide-react";
 
-type Pitch = { id: string; startupName: string; problem: string; solution: string; targetMarket: string };
-type Dimension = { name: string; score: number; justification: string; tip: string };
-type ScoreResult = { overallScore: number; dimensions: Dimension[]; summary: string };
+type Pitch = {
+  id: string;
+  startupName: string;
+  problem: string;
+  solution: string;
+  targetMarket: string;
+};
+type Dimension = {
+  name: string;
+  score: number;
+  justification: string;
+  tip: string;
+};
+type ScoreResult = {
+  overallScore: number;
+  dimensions: Dimension[];
+  summary: string;
+};
 
 export default function PitchScoreClient({ pitches }: { pitches: Pitch[] }) {
   const [selectedPitch, setSelectedPitch] = useState<Pitch | null>(null);
@@ -26,55 +42,77 @@ export default function PitchScoreClient({ pitches }: { pitches: Pitch[] }) {
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 8) return "text-green-500";
-    if (score >= 6) return "text-yellow-500";
-    return "text-destructive";
+    if (score >= 8) return "text-emerald-600 dark:text-emerald-400";
+    if (score >= 6) return "text-amber-600 dark:text-amber-400";
+    return "text-rose-600 dark:text-rose-400";
   };
 
   const getBarColor = (score: number) => {
-    if (score >= 8) return "bg-green-500";
-    if (score >= 6) return "bg-yellow-500";
-    return "bg-destructive";
+    if (score >= 8) return "bg-emerald-500";
+    if (score >= 6) return "bg-amber-500";
+    return "bg-rose-500";
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Pitch Selector */}
-      <div className="glass-panel rounded-2xl p-6">
-        <h3 className="font-semibold mb-4">Select a pitch to score</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="bg-bg-floating border border-border-subtle rounded-2xl p-6 shadow-subtle space-y-4">
+        <div className="flex items-center justify-between pb-2 border-b border-border-subtle">
+          <div className="flex items-center gap-2">
+            <Award className="w-4 h-4 text-amber-500" />
+            <h3 className="font-serif text-base font-medium text-text-primary">
+              1. Select Pitch Deck to Score
+            </h3>
+          </div>
+          <span className="text-[11px] font-mono text-text-muted">
+            10-Point VC Rubric
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
           {pitches.map((p) => (
             <button
               key={p.id}
-              onClick={() => setSelectedPitch(p)}
-              className={`text-left p-4 rounded-xl border-2 transition-all ${
+              onClick={() => {
+                setSelectedPitch(p);
+                setResult(null);
+              }}
+              className={`text-left p-4 rounded-xl border transition-all ${
                 selectedPitch?.id === p.id
-                  ? "border-primary bg-primary/10"
-                  : "border-border hover:border-primary/30 bg-foreground/5"
+                  ? "border-sienna-brown/60 bg-blush-peach/25 shadow-xs"
+                  : "border-border-subtle bg-bg-secondary hover:bg-bg-card"
               }`}
             >
-              <p className="font-bold truncate">{p.startupName}</p>
-              <p className="text-xs text-muted-foreground truncate mt-1">{p.problem}</p>
+              <p className="font-serif text-sm font-medium text-text-primary truncate">
+                {p.startupName}
+              </p>
+              <p className="text-xs text-text-secondary truncate mt-1">
+                {p.problem}
+              </p>
             </button>
           ))}
         </div>
+
         {pitches.length === 0 && (
-          <p className="text-muted-foreground text-center py-8">No pitches yet. Create one first!</p>
+          <p className="text-xs text-text-secondary text-center py-6">
+            No pitches found. Create your first deck to generate a scorecard!
+          </p>
         )}
+
         <button
           onClick={handleScore}
           disabled={!selectedPitch || loading}
-          className="mt-4 w-full bg-primary text-black font-bold py-3 rounded-xl transition-all hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
+          className="w-full bg-ink-black text-paper-white rounded-buttons text-sm font-medium py-3.5 px-6 shadow-subtle hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
         >
           {loading ? (
             <>
-              <div className="w-5 h-5 rounded-full border-2 border-black border-t-transparent animate-spin" />
-              Analyzing with AI...
+              <Loader2 className="w-4 h-4 animate-spin text-blush-peach" />
+              <span>Analyzing Pitch Metrics with AI...</span>
             </>
           ) : (
             <>
-              <span className="material-symbols-outlined text-[20px]">auto_awesome</span>
-              Score This Pitch
+              <Sparkles className="w-4 h-4 text-blush-peach" />
+              <span>Score This Pitch</span>
             </>
           )}
         </button>
@@ -83,32 +121,69 @@ export default function PitchScoreClient({ pitches }: { pitches: Pitch[] }) {
       {/* Results */}
       {result && (
         <div className="space-y-6" id="score-results">
-          {/* Overall Score */}
-          <div className="glass-panel rounded-3xl p-8 text-center">
-            <p className="text-sm font-bold uppercase tracking-widest text-muted-foreground mb-2">Overall Score</p>
-            <div className={`text-7xl font-headline-xl font-bold ${getScoreColor(result.overallScore)}`}>
-              {result.overallScore}<span className="text-2xl text-muted-foreground">/10</span>
+          {/* Overall Score Card */}
+          <div className="bg-bg-floating border border-border-subtle rounded-2xl p-6 md:p-8 shadow-subtle text-center space-y-3">
+            <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-text-muted block">
+              Composite VC Score
+            </span>
+            <div
+              className={`text-6xl md:text-7xl font-mono font-black ${getScoreColor(
+                result.overallScore
+              )}`}
+            >
+              {result.overallScore}
+              <span className="text-2xl text-text-muted font-normal font-sans">
+                /10
+              </span>
             </div>
-            <p className="text-foreground/80 font-body-md mt-4 max-w-lg mx-auto">{result.summary}</p>
+            <p className="text-xs md:text-sm text-text-secondary max-w-lg mx-auto font-sans leading-relaxed">
+              {result.summary}
+            </p>
           </div>
 
           {/* Dimension Breakdown */}
-          <div className="glass-panel rounded-3xl p-8">
-            <h3 className="text-xl font-headline-md font-semibold mb-6">Dimension Breakdown</h3>
+          <div className="bg-bg-floating border border-border-subtle rounded-2xl p-6 md:p-8 shadow-subtle space-y-6">
+            <div className="flex items-center gap-2 pb-2 border-b border-border-subtle">
+              <CheckCircle2 className="w-4 h-4 text-sienna-brown" />
+              <h3 className="font-serif text-base font-medium text-text-primary">
+                Dimension Breakdown
+              </h3>
+            </div>
+
             <div className="space-y-6">
               {result.dimensions.map((dim, i) => (
                 <div key={i} className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="font-semibold font-body-md">{dim.name}</span>
-                    <span className={`font-mono-data font-bold text-lg ${getScoreColor(dim.score)}`}>{dim.score}/10</span>
+                    <span className="text-xs font-semibold text-text-primary">
+                      {dim.name}
+                    </span>
+                    <span
+                      className={`text-xs font-mono font-bold ${getScoreColor(
+                        dim.score
+                      )}`}
+                    >
+                      {dim.score}/10
+                    </span>
                   </div>
-                  <div className="w-full bg-foreground/10 rounded-full h-2.5">
-                    <div className={`h-2.5 rounded-full transition-all ${getBarColor(dim.score)}`} style={{ width: `${dim.score * 10}%` }} />
+
+                  <div className="w-full bg-bg-secondary rounded-full h-2 overflow-hidden border border-border-subtle">
+                    <div
+                      className={`h-2 rounded-full transition-all duration-500 ${getBarColor(
+                        dim.score
+                      )}`}
+                      style={{ width: `${dim.score * 10}%` }}
+                    />
                   </div>
-                  <p className="text-sm text-foreground/70">{dim.justification}</p>
-                  <div className="flex items-start gap-2 bg-primary/5 border border-primary/10 rounded-xl p-3">
-                    <span className="material-symbols-outlined text-primary text-[16px] mt-0.5">lightbulb</span>
-                    <p className="text-sm font-body-md text-foreground/80">{dim.tip}</p>
+
+                  <p className="text-xs text-text-secondary font-sans leading-relaxed">
+                    {dim.justification}
+                  </p>
+
+                  <div className="flex items-start gap-2 bg-blush-peach/20 border border-sienna-brown/20 rounded-xl p-3">
+                    <Lightbulb className="w-3.5 h-3.5 text-sienna-brown shrink-0 mt-0.5" />
+                    <p className="text-xs text-text-primary font-sans leading-relaxed">
+                      {dim.tip}
+                    </p>
                   </div>
                 </div>
               ))}

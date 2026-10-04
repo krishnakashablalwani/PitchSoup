@@ -20,7 +20,8 @@ Solution: ${pitch.solution}
 Market: ${pitch.targetMarket}
 Business Model: ${pitch.businessModel}
 
-Based on this, recommend exactly 3 highly relevant fictional or archetypal Venture Capital firms or Angel Investors that would be a perfect match for this startup.
+Based on this, recommend exactly 3 REAL, world-famous Venture Capital firms (e.g. Sequoia, a16z, YC, Founders Fund) or prominent Angel Investors that would be a perfect match for this startup's thesis.
+Act like a Crunchbase pro search. Provide accurate thesis information for these real firms.
 
 Format the output strictly as a JSON array of objects with the following keys:
 - name: (String) Name of the firm or investor

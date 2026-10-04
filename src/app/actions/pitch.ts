@@ -19,6 +19,8 @@ export async function createPitch(formData: FormData) {
   const businessModel = formData.get('businessModel') as string;
   const traction = formData.get('traction') as string;
 
+  const features = formData.get('features') as string;
+
   let generatedDeckJson = null;
 
   try {
@@ -30,21 +32,36 @@ export async function createPitch(formData: FormData) {
     
     const prompt = `
       You are an expert Silicon Valley Venture Capitalist and pitch deck designer.
-      I need you to generate a 10-slide pitch deck outline for my startup.
+      I need you to generate a comprehensive 12-slide pitch deck for my startup.
       
       Startup Name: ${startupName}
       Problem: ${problem}
       Solution: ${solution}
+      Features & Capabilities: ${features || "Not explicitly specified, deduce from solution"}
       Target Market: ${targetMarket}
-      Business Model: ${businessModel}
+      Business Model (Pricing): ${businessModel}
       Traction/Validation: ${traction || "None yet"}
 
-      
       Return ONLY a raw, valid JSON array (no markdown blocks, no text outside the JSON).
-      The array should contain exactly 10 objects. Each object represents a slide and must have the following keys:
-      - "title": The title of the slide (e.g. "The Problem", "The Solution", "Market Size")
+      The array should contain exactly 12 objects. Each object represents a slide and must have the following keys:
+      - "title": The title of the slide.
       - "content": An array of 3-5 concise bullet points (strings) to display on the slide.
       - "speakerNotes": A paragraph of what the founder should actually say while presenting this slide.
+      - "graphicsSuggestion": A short description of a chart, graph, diagram, or image that should accompany this slide.
+
+      Ensure the slides cover ALL of the following topics comprehensively in a logical order:
+      1. Title & One-Liner
+      2. The Problem
+      3. The Solution
+      4. Key Features & Capabilities
+      5. Market Size & Demographics (TAM/SAM/SOM)
+      6. Go-To-Market (GTM) & Sales Strategy
+      7. Research, Feasibility & Technical Viability (Why now? Is it possible?)
+      8. Business Model & Pricing
+      9. Competitive Analysis (Competitors vs Us)
+      10. 3-Year Financial Projections (ARR, CAC, LTV)
+      11. Traction & Roadmap
+      12. Unfair Advantage / Moat & The Ask (Funding needed)
     `;
 
     const result = await model.generateContent(prompt);

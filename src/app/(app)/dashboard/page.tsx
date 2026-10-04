@@ -1,14 +1,15 @@
-import { currentUser } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { supabase } from '@/lib/supabase';
+import { getPitchesForUser } from '@/lib/mockPitch';
+import { Presentation, MessageSquare, Target } from "lucide-react";
 
 export const dynamic = 'force-dynamic';
 
 export default async function DashboardPage() {
-  const user = await currentUser();
+  const { userId } = await auth();
 
-  if (!user) {
+  if (!userId) {
     redirect("/sign-in");
   }
 
@@ -17,213 +18,125 @@ export default async function DashboardPage() {
   if (hour < 12) greeting = "Good morning";
   else if (hour < 17) greeting = "Good afternoon";
 
-  const firstName = user.firstName || "Founder";
+  const [user, pitches] = await Promise.all([
+    currentUser(),
+    getPitchesForUser(userId)
+  ]);
 
-  const { count } = await supabase.from("Pitch")
-    .select("*", { count: 'exact', head: true })
-    .eq("userId", user.id);
-
-  const pitchCount = count || 0;
-
-  const { data: pitches } = await supabase.from("Pitch")
-    .select("id, startupName, createdAt")
-    .eq("userId", user.id)
-    .order("createdAt", { ascending: false })
-    .limit(3);
+  const firstName = user?.firstName || "Founder";
 
   return (
-    <div className="flex-1 p-6 md:p-10 h-full overflow-y-auto bg-background">
-      <div className="max-w-6xl mx-auto space-y-8">
+    <div className="flex-1 min-h-screen bg-bg-primary text-text-primary overflow-y-auto">
+      <div className="max-w-6xl mx-auto px-6 md:px-10 py-10 md:py-12">
         
-        {/* Header */}
-        <div>
-          <h1 className="text-3xl md:text-4xl font-headline-xl font-bold tracking-tight">
-            {greeting}, <span className="text-gradient">{firstName}</span>
-          </h1>
-          <p className="text-muted-foreground mt-2 text-lg font-body-md">
-            Here is what is happening with your startups today.
-          </p>
+        {/* Editorial Hero */}
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-16">
+          <div className="flex flex-col max-w-xl">
+            <h1 className="font-serif text-[2.5rem] lg:text-[3.25rem] text-text-primary mb-4 leading-tight tracking-tight">
+              {greeting}, <br/><i className="text-text-secondary">{firstName}.</i>
+            </h1>
+            <p className="text-[1.05rem] text-text-secondary font-sans leading-relaxed">
+              Your startup command center. Start cooking a new pitch deck, run financial simulations, or stress-test your existing deck against AI VCs.
+            </p>
+          </div>
+          
+          <div className="flex items-center gap-3 shrink-0">
+            <Link 
+              href="/tools/stress-test"
+              className="px-5 py-2.5 bg-transparent text-text-primary border border-ink-black rounded-buttons font-sans text-[14px] font-medium transition-colors hover:bg-bg-secondary"
+            >
+              Test Deck
+            </Link>
+            <Link 
+              href="/pitch/new"
+              className="px-5 py-2.5 bg-ink-black text-paper-white rounded-buttons font-sans text-[14px] font-medium transition-transform hover:scale-105 active:scale-95"
+            >
+              Start Cooking
+            </Link>
+          </div>
         </div>
 
-        {/* Bento Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 auto-rows-[160px]">
+        {/* Floating Artifacts Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           
-          {/* Main Action - Create Deck (Spans 8 cols, 2 rows) */}
-          <Link 
-            href="/pitch/new" 
-            className="md:col-span-8 row-span-2 group glass-panel rounded-3xl p-8 relative overflow-hidden transition-transform hover:scale-[1.01]"
-          >
-            <div className="absolute -right-12 -top-12 opacity-5 group-hover:opacity-10 transition-opacity">
-              <span className="material-symbols-outlined text-[200px] text-techTeal">lightbulb</span>
-            </div>
-            <div className="h-full flex flex-col justify-between relative z-10">
-              <div className="h-14 w-14 rounded-2xl bg-techTeal/20 text-techTeal flex items-center justify-center">
-                <span className="material-symbols-outlined text-2xl">add_box</span>
-              </div>
-              <div>
-                <h2 className="text-3xl font-headline-lg font-bold mb-2">Cook a New Pitch</h2>
-                <p className="text-muted-foreground font-body-md text-lg max-w-md">
-                  Transform your raw startup idea into a comprehensive, 10-slide investor-ready presentation using our AI Co-Founder.
-                </p>
-              </div>
-            </div>
-          </Link>
-
-          {/* Stat Box (Spans 4 cols, 1 row) */}
-          <div className="md:col-span-4 row-span-1 glass-panel rounded-3xl p-6 flex flex-col justify-between">
-            <div className="flex justify-between items-center text-muted-foreground">
-              <span className="font-label-caps uppercase tracking-wider">Total Pitches</span>
-              <span className="material-symbols-outlined">folder</span>
-            </div>
-            <div>
-              <span className="text-5xl font-headline-xl font-bold">{pitchCount}</span>
-              <span className="text-muted-foreground ml-2">created</span>
-            </div>
-          </div>
-
-          {/* Pitch Q&A Coach (Spans 4 cols, 1 row) */}
-          <Link 
-            href="/simulator" 
-            className="md:col-span-4 row-span-1 glass-panel rounded-3xl p-6 group transition-transform hover:scale-[1.02] relative overflow-hidden"
-          >
-            <div className="absolute right-0 bottom-0 opacity-5 group-hover:opacity-10 transition-opacity translate-x-4 translate-y-4">
-              <span className="material-symbols-outlined text-[100px] text-mutedPlum">forum</span>
-            </div>
-            <div className="h-10 w-10 rounded-xl bg-mutedPlum/20 text-mutedPlum flex items-center justify-center mb-4">
-              <span className="material-symbols-outlined">forum</span>
-            </div>
-            <h3 className="text-xl font-headline-md font-semibold mb-1">Pitch Q&A</h3>
-            <p className="text-muted-foreground font-body-md text-sm">Prepare for investor meetings.</p>
-          </Link>
-
-          {/* Recent Pitches List (Spans 6 cols, 2 rows) */}
-          <div className="md:col-span-6 row-span-2 glass-panel rounded-3xl p-6 flex flex-col">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="font-headline-md font-semibold text-xl">Recent Pitches</h3>
-              <Link href="/dashboard" className="text-techTeal text-sm hover:underline font-medium">View All</Link>
+          {/* Recent Decks Accent Card */}
+          <div className="lg:col-span-8 bg-blush-peach rounded-cards p-8 flex flex-col relative overflow-hidden">
+            <div className="flex justify-between items-start mb-10 relative z-10">
+              <h2 className="font-serif text-[1.75rem] text-sienna-brown">Recent Pitches</h2>
+              <span className="text-[13px] font-sans text-sienna-brown/70 font-medium tracking-wide uppercase">Last 30 Days</span>
             </div>
             
-            <div className="flex-1 overflow-y-auto pr-2 no-scrollbar">
-              {pitches && pitches.length > 0 ? (
-                <ul className="space-y-3">
-                  {pitches.map((pitch) => (
-                    <li key={pitch.id}>
-                      <Link 
-                        href={`/deck/${pitch.id}`} 
-                        className="flex items-center justify-between p-4 rounded-2xl bg-foreground/5 hover:bg-foreground/10 transition-colors"
-                      >
-                        <div className="flex items-center gap-4">
-                          <div className="h-10 w-10 rounded-xl bg-background flex items-center justify-center border border-border">
-                            <span className="material-symbols-outlined text-foreground">auto_awesome</span>
-                          </div>
-                          <div>
-                            <h4 className="font-semibold font-body-md">{pitch.startupName}</h4>
-                            <p className="text-xs text-muted-foreground">
-                              {new Date(pitch.createdAt).toLocaleDateString()}
-                            </p>
-                          </div>
-                        </div>
-                        <span className="material-symbols-outlined text-muted-foreground">chevron_right</span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <div className="h-full flex flex-col items-center justify-center text-center opacity-50">
-                  <span className="material-symbols-outlined text-4xl mb-2">inventory_2</span>
-                  <p className="font-body-md">No pitches found.</p>
-                </div>
-              )}
-            </div>
+            {pitches && pitches.length > 0 ? (
+              <div className="flex flex-col gap-3 relative z-10">
+                {pitches.map((pitch) => (
+                  <Link 
+                    key={pitch.id}
+                    href={`/deck/${pitch.id}`} 
+                    className="group bg-paper-white/50 hover:bg-paper-white/80 transition-colors rounded-[12px] p-3 flex items-center justify-between shadow-sm"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 bg-paper-white rounded-lg flex items-center justify-center shadow-sm">
+                        <Presentation className="w-5 h-5 text-sienna-brown" />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[15px] font-medium text-sienna-brown">
+                          {pitch.startupName}
+                        </span>
+                        <span className="text-[13px] text-sienna-brown/60">
+                          {new Date(pitch.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+                    <span className="text-sienna-brown font-medium text-[14px] flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                      View →
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="flex-1 flex flex-col items-center justify-center text-center p-8 bg-paper-white/30 rounded-[16px] relative z-10 mt-auto border border-sienna-brown/10">
+                <p className="text-sienna-brown/70 mb-3 font-sans text-[14px]">No pitches found. Time to build.</p>
+                <Link href="/pitch/new" className="text-sienna-brown font-medium text-[15px] hover:underline">
+                  Create your first deck →
+                </Link>
+              </div>
+            )}
+            
+            {/* Decorative abstract shape in background */}
+            <div className="absolute right-[-10%] bottom-[-20%] w-[60%] h-[80%] rounded-full bg-paper-white/20 blur-[60px] pointer-events-none" />
           </div>
 
-          {/* Cap Table (Spans 6 cols, 1 row) */}
-          <Link 
-            href="/tools/cap-table" 
-            className="md:col-span-6 row-span-1 glass-panel rounded-3xl p-6 group transition-transform hover:scale-[1.02] flex items-center justify-between overflow-hidden relative"
-          >
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-5 group-hover:opacity-10 transition-opacity translate-x-4">
-              <span className="material-symbols-outlined text-[100px] text-primary">pie_chart</span>
-            </div>
-            <div>
-              <div className="h-10 w-10 rounded-xl bg-primary/20 text-primary flex items-center justify-center mb-3">
-                <span className="material-symbols-outlined">calculate</span>
+          {/* Quick Tools Column */}
+          <div className="lg:col-span-4 flex flex-col gap-6">
+            
+            <Link href="/simulator" className="bg-bg-floating border border-border-subtle shadow-subtle-2 rounded-cards p-6 hover:shadow-subtle-3 transition-shadow group flex-1">
+              <div className="w-10 h-10 bg-bg-secondary rounded-lg flex items-center justify-center mb-4 text-text-primary">
+                <MessageSquare className="w-5 h-5" />
               </div>
-              <h3 className="text-xl font-headline-md font-semibold">Cap Table Math</h3>
-              <p className="text-muted-foreground font-body-md text-sm">Calculate dilution scenarios.</p>
-            </div>
-            <span className="material-symbols-outlined text-muted-foreground">arrow_forward</span>
-          </Link>
-
-          {/* Demo Day (Spans 6 cols, 1 row) */}
-          <Link 
-            href="/showcase" 
-            className="md:col-span-6 row-span-1 glass-panel rounded-3xl p-6 group transition-transform hover:scale-[1.02] flex items-center justify-between overflow-hidden relative"
-          >
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-5 group-hover:opacity-10 transition-opacity translate-x-4">
-              <span className="material-symbols-outlined text-[100px] text-secondary">public</span>
-            </div>
-            <div>
-              <div className="h-10 w-10 rounded-xl bg-secondary/20 text-secondary flex items-center justify-center mb-3">
-                <span className="material-symbols-outlined">stars</span>
+              <h3 className="font-sans text-[17px] font-medium text-text-primary mb-2">Q&A Simulator</h3>
+              <p className="text-text-secondary text-[14px] leading-relaxed mb-4">
+                Prepare for aggressive investor pushback with our AI VC agent.
+              </p>
+              <span className="text-[14px] font-medium text-text-primary flex items-center group-hover:underline">
+                Practice Pitching →
+              </span>
+            </Link>
+            
+            <Link href="/tools/stress-test" className="bg-bg-floating border border-border-subtle shadow-subtle-2 rounded-cards p-6 hover:shadow-subtle-3 transition-shadow group flex-1">
+              <div className="w-10 h-10 bg-bg-secondary rounded-lg flex items-center justify-center mb-4 text-text-primary">
+                <Target className="w-5 h-5" />
               </div>
-              <h3 className="text-xl font-headline-md font-semibold">Demo Day</h3>
-              <p className="text-muted-foreground font-body-md text-sm">Explore top generated pitches.</p>
-            </div>
-            <span className="material-symbols-outlined text-muted-foreground">arrow_forward</span>
-          </Link>
+              <h3 className="font-sans text-[17px] font-medium text-text-primary mb-2">Stress Test</h3>
+              <p className="text-text-secondary text-[14px] leading-relaxed mb-4">
+                Identify fatal flaws in your logic before you pitch a human.
+              </p>
+              <span className="text-[14px] font-medium text-text-primary flex items-center group-hover:underline">
+                Analyze Deck →
+              </span>
+            </Link>
 
-          {/* Runway Calculator (Spans 4 cols, 1 row) */}
-          <Link 
-            href="/tools/runway" 
-            className="md:col-span-4 row-span-1 glass-panel rounded-3xl p-6 group transition-transform hover:scale-[1.02] relative overflow-hidden flex flex-col justify-between"
-          >
-            <div className="absolute right-0 bottom-0 opacity-5 group-hover:opacity-10 transition-opacity translate-x-4 translate-y-4">
-              <span className="material-symbols-outlined text-[100px] text-techTeal">flight_takeoff</span>
-            </div>
-            <div className="h-10 w-10 rounded-xl bg-techTeal/20 text-techTeal flex items-center justify-center mb-2">
-              <span className="material-symbols-outlined">flight_takeoff</span>
-            </div>
-            <div>
-              <h3 className="text-xl font-headline-md font-semibold mb-1">Runway Calc</h3>
-              <p className="text-muted-foreground font-body-md text-sm">Plan your burn rate & survival.</p>
-            </div>
-          </Link>
-
-          {/* Investor Match (Spans 4 cols, 1 row) */}
-          <Link 
-            href="/tools/investor-match" 
-            className="md:col-span-4 row-span-1 glass-panel rounded-3xl p-6 group transition-transform hover:scale-[1.02] relative overflow-hidden flex flex-col justify-between"
-          >
-            <div className="absolute right-0 bottom-0 opacity-5 group-hover:opacity-10 transition-opacity translate-x-4 translate-y-4">
-              <span className="material-symbols-outlined text-[100px] text-[#8a8aff]">handshake</span>
-            </div>
-            <div className="h-10 w-10 rounded-xl bg-[#8a8aff]/20 text-[#8a8aff] flex items-center justify-center mb-2">
-              <span className="material-symbols-outlined">handshake</span>
-            </div>
-            <div>
-              <h3 className="text-xl font-headline-md font-semibold mb-1">Investor Match</h3>
-              <p className="text-muted-foreground font-body-md text-sm">Find the right VCs for you.</p>
-            </div>
-          </Link>
-
-          {/* Competitor Battlecard (Spans 4 cols, 1 row) */}
-          <Link 
-            href="/tools/battlecard" 
-            className="md:col-span-4 row-span-1 glass-panel rounded-3xl p-6 group transition-transform hover:scale-[1.02] relative overflow-hidden flex flex-col justify-between"
-          >
-            <div className="absolute right-0 bottom-0 opacity-5 group-hover:opacity-10 transition-opacity translate-x-4 translate-y-4">
-              <span className="material-symbols-outlined text-[100px] text-destructive">swords</span>
-            </div>
-            <div className="h-10 w-10 rounded-xl bg-destructive/20 text-destructive flex items-center justify-center mb-2">
-              <span className="material-symbols-outlined">swords</span>
-            </div>
-            <div>
-              <h3 className="text-xl font-headline-md font-semibold mb-1">Battlecard</h3>
-              <p className="text-muted-foreground font-body-md text-sm">Compare against incumbents.</p>
-            </div>
-          </Link>
-
+          </div>
+          
         </div>
       </div>
     </div>

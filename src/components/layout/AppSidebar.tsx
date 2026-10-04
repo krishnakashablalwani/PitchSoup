@@ -5,6 +5,19 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth, useUser } from "@clerk/nextjs";
 import Image from "next/image";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import {
+  LayoutDashboard,
+  PlusSquare,
+  MessageSquare,
+  Flame,
+  Radar,
+  Calculator,
+  Settings,
+  LogOut,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 
 export function AppSidebar() {
   const pathname = usePathname();
@@ -12,104 +25,122 @@ export function AppSidebar() {
   const { signOut } = useAuth();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
-  const navigation: Array<{ name: string; href: string; icon: string; comingSoon?: boolean }> = [
-    { name: "Dashboard", href: "/dashboard", icon: "dashboard" },
-    { name: "New Pitch", href: "/pitch/new", icon: "add_box" },
-    { name: "Demo Day Showcase", href: "/showcase", icon: "public" },
-    { name: "Pitch Scorecard", href: "/tools/pitch-score", icon: "scoreboard" },
-    { name: "Pitch Q&A", href: "/simulator", icon: "forum" },
-    { name: "Cap Table", href: "/tools/cap-table", icon: "calculate" },
-    { name: "Runway Calculator", href: "/tools/runway", icon: "speed" },
-    { name: "Investor Match", href: "/tools/investor-match", icon: "radar" },
-    { name: "Competitor Battlecard", href: "/tools/battlecard", icon: "swords" },
-    { name: "Export Hub", href: "/tools/export", icon: "download" },
+  const navigation = [
+    {
+      name: "Dashboard",
+      subtitle: "Overview & metrics",
+      href: "/dashboard",
+      icon: LayoutDashboard,
+    },
+    {
+      name: "New Pitch",
+      subtitle: "Generate AI deck",
+      href: "/pitch/new",
+      icon: PlusSquare,
+    },
+    {
+      name: "Pitch Q&A",
+      subtitle: "Simulator & coaching",
+      href: "/simulator",
+      icon: MessageSquare,
+    },
+    {
+      name: "VC Stress Test",
+      subtitle: "Risk analysis",
+      href: "/tools/stress-test",
+      icon: Flame,
+    },
+    {
+      name: "Outreach",
+      subtitle: "CRM & emails",
+      href: "/tools/outreach",
+      icon: Radar,
+    },
+    {
+      name: "Financials",
+      subtitle: "Runway & cap table",
+      href: "/tools/financials",
+      icon: Calculator,
+    },
   ];
 
   return (
-    <div className="w-64 h-screen fixed top-0 left-0 border-r border-border bg-gradient-to-b from-background via-background to-foreground/5 flex flex-col z-50 shadow-2xl">
+    <aside className="w-48 h-full bg-bg-primary flex flex-col shrink-0 border-r border-border-subtle">
       {/* Logo Area */}
-      <div className="p-8 border-b border-border/50 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-[50px] -z-10 rounded-full" />
-        <Link href="/dashboard" className="flex items-center space-x-4 group relative z-10">
-          <div className="relative">
+      <div className="px-4 py-3.5 flex items-center justify-between border-b border-border-subtle/70">
+        <Link
+          href="/dashboard"
+          className="flex items-center space-x-2.5 group relative z-10"
+        >
+          <div className="relative w-7 h-7 rounded-images overflow-hidden group-hover:scale-105 transition-transform shrink-0">
             <Image
               src="/logo.png"
-              alt="PitchSoup Logo"
-              width={40}
-              height={40}
-              className="rounded-xl transition-all duration-300 group-hover:scale-110 group-hover:shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)]"
+              alt="Logo"
+              fill
+              sizes="28px"
+              className="object-cover"
             />
           </div>
-          <span className="font-headline-md font-black tracking-widest text-xl text-transparent bg-clip-text text-white">
+          <span className="font-serif font-medium text-[16px] text-text-primary tracking-tight">
             PitchSoup
           </span>
         </Link>
+        <ThemeToggle />
       </div>
 
-      {/* Navigation */}
-      <div className="flex-1 px-4 py-6 space-y-2 overflow-y-auto custom-scrollbar">
-        <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4 px-2">
-          Platform
-        </div>
+      {/* Navigation Links */}
+      <nav className="flex-1 px-2.5 py-4 space-y-1 overflow-y-auto no-scrollbar">
         {navigation.map((item) => {
+          const Icon = item.icon;
           const isActive =
             pathname === item.href ||
             (pathname.startsWith(item.href + "/") &&
               item.href !== "/dashboard");
+
           return (
             <Link
               key={item.name}
-              href={item.comingSoon ? "#" : item.href}
-              className={`flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-300 group relative overflow-hidden ${
-                isActive && !item.comingSoon
-                  ? "bg-foreground/10 text-foreground shadow-sm"
-                  : "text-muted-foreground hover:bg-foreground/5 hover:text-foreground"
-              } ${item.comingSoon ? "opacity-60 cursor-not-allowed" : ""}`}
-              onClick={(e) => {
-                if (item.comingSoon) e.preventDefault();
-              }}
+              href={item.href}
+              title={item.subtitle}
+              className={`flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all duration-200 group relative ${
+                isActive
+                  ? "bg-bg-secondary text-text-primary font-medium border border-border-subtle shadow-xs"
+                  : "text-text-secondary hover:bg-bg-secondary/70 hover:text-text-primary"
+              }`}
             >
-              <div className="flex items-center gap-3">
-                <span
-                  className={`material-symbols-outlined text-[20px] ${isActive && !item.comingSoon ? "text-primary" : "text-muted-foreground group-hover:text-foreground"}`}
-                >
-                  {item.icon}
-                </span>
-                <span className="text-sm font-medium">{item.name}</span>
-              </div>
-              {item.comingSoon && (
-                <span className="text-[9px] font-bold bg-foreground/5 border border-foreground/10 text-muted-foreground px-2 py-0.5 rounded-full uppercase tracking-widest">
-                  Soon
-                </span>
-              )}
+              <Icon
+                className={`w-4 h-4 shrink-0 transition-colors ${
+                  isActive
+                    ? "text-sienna-brown dark:text-blush-peach"
+                    : "text-text-tertiary group-hover:text-text-primary"
+                }`}
+              />
+              <span className="text-[13px] truncate flex-1 leading-none">
+                {item.name}
+              </span>
             </Link>
           );
         })}
-      </div>
+      </nav>
 
-      {/* User Profile / Settings */}
-      <div className="p-4 border-t border-border relative">
+      {/* User Profile / Settings Menu */}
+      <div className="px-2.5 pb-4 pt-3 relative border-t border-border-subtle flex flex-col gap-1">
         {isProfileMenuOpen && (
-          <div className="absolute bottom-full left-4 mb-2 w-[calc(100%-32px)] bg-background border border-border rounded-xl shadow-lg overflow-hidden z-50">
+          <div className="absolute bottom-full left-2.5 mb-2 w-[calc(100%-20px)] bg-bg-floating border border-border-subtle rounded-xl shadow-subtle-2 overflow-hidden z-50 py-1">
             <Link
               href="/settings"
               onClick={() => setIsProfileMenuOpen(false)}
-              className="flex items-center gap-3 w-full p-3 text-sm text-foreground/80 hover:text-foreground hover:bg-foreground/5 transition-colors text-left"
+              className="flex items-center gap-2.5 w-full px-3 py-2 text-[13px] font-medium text-text-secondary hover:text-text-primary transition-colors text-left hover:bg-bg-secondary"
             >
-              <span className="material-symbols-outlined text-[18px]">
-                settings
-              </span>
-              Settings & Account
+              <Settings className="w-3.5 h-3.5 text-text-tertiary" />
+              Settings
             </Link>
 
-            <div className="h-px w-full bg-border"></div>
             <button
               onClick={() => signOut({ redirectUrl: "/" })}
-              className="flex items-center gap-3 w-full p-3 text-sm text-red-500 hover:text-red-400 hover:bg-red-500/10 transition-colors text-left"
+              className="flex items-center gap-2.5 w-full px-3 py-2 text-[13px] font-medium text-rose-600 hover:text-rose-500 transition-colors text-left hover:bg-bg-secondary"
             >
-              <span className="material-symbols-outlined text-[18px]">
-                logout
-              </span>
+              <LogOut className="w-3.5 h-3.5" />
               Sign Out
             </button>
           </div>
@@ -117,28 +148,30 @@ export function AppSidebar() {
 
         <button
           onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-          className="flex items-center justify-between w-full p-2 rounded-xl hover:bg-foreground/5 transition-colors text-left"
+          className="flex items-center justify-between w-full px-2.5 py-2 rounded-xl hover:bg-bg-secondary group transition-colors text-left"
         >
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
             <img
               src={user?.imageUrl || "https://www.gravatar.com/avatar/?d=mp"}
               alt="Profile"
-              className="w-8 h-8 rounded-lg"
+              className="w-7 h-7 rounded-full bg-mist-gray border border-border-subtle shrink-0 object-cover"
             />
-            <div className="flex flex-col">
-              <span className="text-sm font-medium text-foreground line-clamp-1">
-                {user?.firstName || "My Profile"}
+            <div className="flex flex-col min-w-0 flex-1">
+              <span className="text-[12.5px] font-medium text-text-primary truncate leading-tight">
+                {user?.firstName || "Founder"}
               </span>
-              <span className="text-xs text-muted-foreground line-clamp-1">
-                Manage Account
+              <span className="text-[10.5px] text-text-tertiary truncate leading-tight mt-0.5">
+                Workspace Admin
               </span>
             </div>
           </div>
-          <span className="material-symbols-outlined text-muted-foreground text-sm">
-            {isProfileMenuOpen ? "expand_more" : "expand_less"}
-          </span>
+          {isProfileMenuOpen ? (
+            <ChevronUp className="w-4 h-4 text-text-tertiary group-hover:text-text-secondary transition-colors shrink-0 ml-1" />
+          ) : (
+            <ChevronDown className="w-4 h-4 text-text-tertiary group-hover:text-text-secondary transition-colors shrink-0 ml-1" />
+          )}
         </button>
       </div>
-    </div>
+    </aside>
   );
 }

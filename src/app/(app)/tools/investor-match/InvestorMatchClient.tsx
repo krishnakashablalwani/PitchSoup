@@ -2,6 +2,16 @@
 
 import { useState } from "react";
 import { findInvestors } from "@/app/actions/match";
+import {
+  Users,
+  Search,
+  Building2,
+  Sparkles,
+  Loader2,
+  DollarSign,
+  Heart,
+  FolderOpen,
+} from "lucide-react";
 
 type Pitch = {
   id: string;
@@ -28,7 +38,7 @@ export default function InvestorMatchClient({ pitches }: { pitches: Pitch[] }) {
 
   const handleMatch = async () => {
     if (!selectedPitch) return;
-    const pitch = pitches.find(p => p.id === selectedPitch);
+    const pitch = pitches.find((p) => p.id === selectedPitch);
     if (!pitch) return;
 
     setLoading(true);
@@ -47,76 +57,127 @@ export default function InvestorMatchClient({ pitches }: { pitches: Pitch[] }) {
   };
 
   return (
-    <div className="space-y-8">
-      <div className="glass-panel p-6 rounded-2xl shadow-sm">
-        <label className="block text-sm font-bold text-muted-foreground uppercase tracking-widest mb-4">
-          Select Your Startup
-        </label>
-        <div className="flex gap-4">
-          <select 
-            value={selectedPitch}
-            onChange={(e) => setSelectedPitch(e.target.value)}
-            className="flex-1 bg-card border border-border p-4 rounded-xl focus:outline-none focus:border-primary font-body-md"
-          >
-            <option value="" disabled>Choose a pitch...</option>
-            {pitches.map(p => (
-              <option key={p.id} value={p.id}>{p.startupName}</option>
-            ))}
-          </select>
-          <button 
-            onClick={handleMatch}
-            disabled={!selectedPitch || loading}
-            className="px-8 py-4 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl disabled:opacity-50 transition-colors flex items-center gap-2 shadow-lg shadow-primary/20"
-          >
-            {loading ? (
-              <span className="material-symbols-outlined animate-spin">refresh</span>
-            ) : (
-              <span className="material-symbols-outlined">search</span>
-            )}
-            Find Matches
-          </button>
+    <div className="space-y-6">
+      {/* Selector Card */}
+      <div className="bg-bg-floating border border-border-subtle rounded-2xl p-6 shadow-subtle space-y-4">
+        <div className="flex items-center justify-between pb-2 border-b border-border-subtle">
+          <div className="flex items-center gap-2">
+            <Users className="w-4 h-4 text-sienna-brown" />
+            <h3 className="font-serif text-base font-medium text-text-primary">
+              Select Your Startup to Find Investor Matches
+            </h3>
+          </div>
+          <span className="text-[11px] font-mono text-text-muted">
+            Thesis-Fit Matching
+          </span>
         </div>
-        {error && <p className="text-destructive mt-4 font-bold">{error}</p>}
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+          {pitches.map((p) => (
+            <button
+              key={p.id}
+              onClick={() => {
+                setSelectedPitch(p.id);
+                setInvestors([]);
+              }}
+              className={`text-left p-4 rounded-xl border transition-all ${
+                selectedPitch === p.id
+                  ? "border-sienna-brown/60 bg-blush-peach/25 shadow-xs"
+                  : "border-border-subtle bg-bg-secondary hover:bg-bg-card"
+              }`}
+            >
+              <p className="font-serif text-sm font-medium text-text-primary truncate">
+                {p.startupName}
+              </p>
+              <p className="text-xs text-text-secondary truncate mt-1">
+                {p.targetMarket || "General Market"}
+              </p>
+            </button>
+          ))}
+        </div>
+
+        <button
+          onClick={handleMatch}
+          disabled={!selectedPitch || loading}
+          className="w-full bg-ink-black text-paper-white rounded-buttons text-sm font-medium py-3.5 px-6 shadow-subtle hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
+        >
+          {loading ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin text-blush-peach" />
+              <span>Matching Theses...</span>
+            </>
+          ) : (
+            <>
+              <Search className="w-4 h-4 text-blush-peach" />
+              <span>Find Aligned VCs</span>
+            </>
+          )}
+        </button>
+
+        {error && (
+          <p className="text-xs text-rose-600 dark:text-rose-400 font-medium">
+            {error}
+          </p>
+        )}
       </div>
 
+      {/* Results */}
       {investors.length > 0 && (
-        <div className="space-y-6">
-          <h2 className="text-2xl font-headline-md font-bold mb-6">Top Matches</h2>
-          <div className="grid grid-cols-1 gap-6">
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 pb-1 border-b border-border-subtle">
+            <Sparkles className="w-4 h-4 text-sienna-brown" />
+            <h3 className="font-serif text-base font-medium text-text-primary">
+              Top Matched VC Funds &amp; Angels ({investors.length})
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4">
             {investors.map((inv, idx) => (
-              <div key={idx} className="glass-panel p-6 rounded-2xl shadow-sm border border-border relative overflow-hidden group hover:border-primary/50 transition-colors">
-                <div className="flex justify-between items-start mb-4 relative z-10">
+              <div
+                key={idx}
+                className="bg-bg-floating border border-border-subtle rounded-2xl p-6 shadow-subtle hover:border-sienna-brown/40 transition-colors space-y-4"
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border-subtle">
                   <div>
-                    <h3 className="text-xl font-bold font-headline-sm flex items-center gap-2">
-                      <span className="material-symbols-outlined text-secondary">account_balance</span>
+                    <h4 className="font-serif text-lg font-medium text-text-primary flex items-center gap-2">
+                      <Building2 className="w-4 h-4 text-sienna-brown" />
                       {inv.name}
-                    </h3>
-                    <span className="inline-block mt-2 bg-primary/10 text-primary text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                    </h4>
+                    <span className="inline-block mt-1 bg-blush-peach/40 text-sienna-brown dark:text-blush-peach text-[11px] font-medium px-2 py-0.5 rounded-full">
                       {inv.type}
                     </span>
                   </div>
-                  <div className="bg-card px-4 py-2 rounded-lg border border-border text-center">
-                    <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider mb-1">Check Size</p>
-                    <p className="font-mono-data font-bold">{inv.typicalCheck}</p>
+
+                  <div className="bg-bg-secondary px-3.5 py-1.5 rounded-xl border border-border-subtle text-left sm:text-right shrink-0">
+                    <span className="text-[10px] text-text-muted uppercase font-mono tracking-wider block">
+                      Typical Check
+                    </span>
+                    <span className="font-mono text-xs font-bold text-text-primary">
+                      {inv.typicalCheck}
+                    </span>
                   </div>
                 </div>
-                
-                <div className="space-y-4 relative z-10">
+
+                <div className="space-y-3 text-xs font-sans">
                   <div>
-                    <h4 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-1">Thesis</h4>
-                    <p className="font-body-md text-foreground/90">{inv.thesis}</p>
+                    <h5 className="font-semibold text-text-secondary uppercase tracking-wider text-[11px] mb-1">
+                      Investment Thesis
+                    </h5>
+                    <p className="text-text-primary leading-relaxed">
+                      {inv.thesis}
+                    </p>
                   </div>
-                  <div className="bg-secondary/5 border border-secondary/20 p-4 rounded-xl">
-                    <h4 className="text-sm font-bold text-secondary uppercase tracking-wider mb-2 flex items-center gap-2">
-                      <span className="material-symbols-outlined text-sm">favorite</span>
-                      Why it's a match
-                    </h4>
-                    <p className="font-body-md">{inv.whyMatch}</p>
+
+                  <div className="bg-blush-peach/20 border border-sienna-brown/20 p-3.5 rounded-xl">
+                    <h5 className="font-semibold text-sienna-brown dark:text-blush-peach uppercase tracking-wider text-[11px] mb-1 flex items-center gap-1.5">
+                      <Heart className="w-3 h-3" />
+                      Why It&apos;s a Strategic Fit
+                    </h5>
+                    <p className="text-text-primary leading-relaxed">
+                      {inv.whyMatch}
+                    </p>
                   </div>
                 </div>
-                
-                {/* Subtle highlight gradient */}
-                <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-secondary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
             ))}
           </div>
@@ -124,10 +185,14 @@ export default function InvestorMatchClient({ pitches }: { pitches: Pitch[] }) {
       )}
 
       {pitches.length === 0 && (
-        <div className="text-center p-12 glass-panel rounded-2xl">
-          <span className="material-symbols-outlined text-4xl text-muted-foreground mb-4">folder_off</span>
-          <h3 className="text-xl font-bold mb-2">No Pitches Found</h3>
-          <p className="text-muted-foreground font-body-md">You need to create a pitch deck first before we can find investors.</p>
+        <div className="text-center p-12 bg-bg-floating border border-border-subtle rounded-2xl shadow-subtle">
+          <FolderOpen className="w-8 h-8 text-text-muted mx-auto mb-2" />
+          <h4 className="font-serif text-base font-medium text-text-primary mb-1">
+            No Pitches Found
+          </h4>
+          <p className="text-xs text-text-secondary font-sans">
+            Create a pitch deck first before running investor thesis matching.
+          </p>
         </div>
       )}
     </div>

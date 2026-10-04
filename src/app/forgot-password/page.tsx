@@ -4,6 +4,9 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useSignIn } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { ArrowRight, Sparkles, KeyRound, ShieldCheck } from "lucide-react";
 
 export default function ForgotPasswordPage() {
   const { isLoaded, signIn, setActive } = useSignIn() as any;
@@ -107,27 +110,15 @@ export default function ForgotPasswordPage() {
         await setActive({ session: result.createdSessionId });
         router.push("/dashboard");
       } else {
-        setError("Password reset incomplete. Please try again.");
+        console.log("Password reset status:", result.status);
+        setError("Password reset incomplete. Please check your verification code.");
       }
     } catch (err: any) {
-      console.error("Password reset attempt error:", err);
-      const errorCode = err.errors?.[0]?.code;
-      if (errorCode === "form_code_incorrect") {
-        setError("Incorrect reset code. Please try again.");
-      } else if (errorCode === "form_password_pwned") {
-        setError(
-          "This password has been compromised in a data breach. Please choose a different one.",
-        );
-      } else if (err.errors?.[0]?.meta?.paramName === "password") {
-        setError(
-          err.errors?.[0]?.message || "Password does not meet requirements.",
-        );
-      } else {
-        setError(
-          err.errors?.[0]?.longMessage ||
-            "Failed to reset password. Please try again.",
-        );
-      }
+      console.error("Password reset confirmation error:", err);
+      setError(
+        err.errors?.[0]?.longMessage ||
+          "Failed to reset password. Please check your verification code.",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -168,213 +159,214 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen relative bg-black text-white flex overflow-hidden">
-      {/* Background with Diagonal Split - visible on lg screens */}
-      <div
-        className="absolute inset-0 z-0 bg-neutral-900 hidden lg:block"
-        style={{ clipPath: "polygon(0 0, 55% 0, 45% 100%, 0% 100%)" }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-transparent" />
-      </div>
+    <div className="min-h-screen bg-bg-primary text-text-primary flex flex-col justify-between selection:bg-blush-peach selection:text-sienna-brown font-sans relative overflow-x-hidden">
+      {/* Background Soft Glow */}
+      <div className="fixed inset-0 pointer-events-none z-0 opacity-40 dark:opacity-20 bg-[radial-gradient(ellipse_at_top,_var(--color-blush-peach)_0%,_transparent_60%)]" />
 
-      {/* Main Content */}
-      <div className="relative z-10 flex flex-col lg:flex-row w-full max-w-7xl mx-auto">
-        {/* Left Side: Text / Info */}
-        <div className="lg:w-1/2 flex flex-col justify-center p-8 md:p-16 lg:pr-24">
+      {/* Top Header */}
+      <header className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-12 py-6 flex items-center justify-between">
+        <Link href="/" className="flex items-center space-x-3 group">
+          <div className="relative w-8 h-8 rounded-images overflow-hidden group-hover:scale-105 transition-transform shadow-sm">
+            <Image src="/logo.png" alt="PitchSoup Logo" fill sizes="32px" className="object-cover" priority />
+          </div>
+          <span className="font-bold text-[18px] tracking-tight font-serif text-text-primary">
+            PitchSoup
+          </span>
+        </Link>
+
+        <div className="flex items-center space-x-4">
+          <ThemeToggle />
           <Link
-            href="/"
-            className="flex items-center space-x-3 mb-16 w-max group"
+            href="/sign-in"
+            className="text-[14px] font-sans font-medium text-text-secondary hover:text-text-primary transition-colors hidden sm:inline-block"
           >
-            <img
-              src="/logo.png"
-              alt="PitchSoup Logo"
-              className="w-8 h-8 rounded object-contain transition-transform group-hover:scale-110"
-            />
-            <span className="font-bold tracking-[0.1em] text-lg text-white uppercase">
-              PitchSoup
-            </span>
+            Remember password? <span className="font-semibold underline underline-offset-4">Sign In</span>
           </Link>
-
-          <h1 className="text-4xl md:text-5xl font-bold mb-6 text-white leading-tight">
-            Reset your <span className="text-indigo-400">access.</span>
-          </h1>
-          <p className="text-neutral-400 text-lg leading-relaxed mb-8">
-            Enter your email address to receive a verification code. You can
-            then use this code to choose a new password and regain access to
-            your dashboard.
-          </p>
         </div>
+      </header>
 
-        {/* Right Side: Reset Form */}
-        <div className="lg:w-1/2 flex items-center justify-center p-8 md:p-16">
-          <div className="w-full max-w-md bg-white/5 backdrop-blur-2xl border border-white/10 p-8 md:p-10 rounded-3xl shadow-2xl">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-white mb-2">
-                Forgot Password
-              </h2>
-              <p className="text-neutral-400 text-sm">
-                {!successfulCreation
-                  ? "Enter your email to reset your password"
-                  : "Check your email for the reset code"}
-              </p>
+      {/* Main Container */}
+      <main className="relative z-10 flex-1 flex items-center justify-center w-full max-w-7xl mx-auto px-6 md:px-12 py-8 md:py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center w-full">
+          
+          {/* Left Column: Editorial Information */}
+          <div className="lg:col-span-6 flex flex-col justify-center max-w-xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blush-peach/40 text-sienna-brown text-[12px] font-medium tracking-wide uppercase mb-6 w-max border border-sienna-brown/15">
+              <KeyRound className="w-3.5 h-3.5" />
+              Security & Access
             </div>
 
-            {error && (
-              <div className="mb-6 p-4 bg-red-900/40 border border-red-500/50 rounded-2xl flex flex-col items-center text-center space-y-4 shadow-xl">
-                <p className="text-red-200 text-sm font-medium">{error}</p>
-                {useGoogleLink && (
-                  <button
-                    onClick={handleGoogleOAuth}
-                    type="button"
-                    className="w-full flex items-center justify-center space-x-3 bg-white text-black py-2.5 px-4 rounded-xl font-semibold hover:bg-neutral-200 transition-all shadow-md hover:scale-[1.02]"
-                  >
-                    <svg
-                      viewBox="0 0 24 24"
-                      className="w-5 h-5"
-                      aria-hidden="true"
-                    >
-                      <path
-                        d="M12.0003 4.75C13.7703 4.75 15.3553 5.36 16.6053 6.549L20.0303 3.125C17.9503 1.19 15.2353 0 12.0003 0C7.31028 0 3.25528 2.69 1.28027 6.609L5.27027 9.704C6.21527 6.86 8.87028 4.75 12.0003 4.75Z"
-                        fill="#EA4335"
-                      />
-                      <path
-                        d="M23.49 12.275C23.49 11.49 23.415 10.73 23.3 10H12V14.51H18.47C18.18 15.99 17.34 17.25 16.08 18.1L19.945 21.1C22.2 19.01 23.49 15.92 23.49 12.275Z"
-                        fill="#4285F4"
-                      />
-                      <path
-                        d="M5.26498 14.294C5.02498 13.569 4.87998 12.8 4.87998 12C4.87998 11.2 5.01998 10.43 5.26498 9.704L1.27498 6.609C0.45998 8.279 0 10.06 0 12C0 13.94 0.45998 15.72 1.28048 17.39L5.26498 14.294Z"
-                        fill="#FBBC05"
-                      />
-                      <path
-                        d="M12.0004 24C15.2404 24 17.9654 22.935 19.9454 21.095L16.0804 18.095C15.0054 18.82 13.6204 19.245 12.0004 19.245C8.8704 19.245 6.2154 17.135 5.2654 14.29L1.2754 17.385C3.2554 21.31 7.3104 24 12.0004 24Z"
-                        fill="#34A853"
-                      />
-                    </svg>
-                    <span>Continue with Google</span>
-                  </button>
-                )}
-              </div>
-            )}
+            <h1 className="font-serif text-[2.5rem] lg:text-[3.25rem] text-text-primary leading-[1.12] tracking-tight mb-4">
+              Reset your <br />
+              <i className="text-text-secondary">credentials.</i>
+            </h1>
 
-            {!successfulCreation ? (
-              <form className="space-y-4" onSubmit={requestPasswordReset}>
-                <div>
-                  <label
-                    className="block text-sm font-medium text-neutral-300 mb-1.5"
-                    htmlFor="email"
-                  >
-                    Email address
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full bg-black/20 backdrop-blur-md border border-white/10 rounded-xl px-4 py-3 text-white placeholder-neutral-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                    placeholder="name@company.com"
-                    required
-                  />
-                </div>
+            <p className="text-[1.05rem] text-text-secondary leading-relaxed mb-8">
+              We'll send a secure one-time verification code to your email address to help you recover access to your pitch decks.
+            </p>
 
-                <button
-                  type="submit"
-                  disabled={!isLoaded || isSubmitting}
-                  className="w-full bg-indigo-500 text-white font-semibold rounded-xl px-4 py-3 mt-4 hover:bg-indigo-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                >
-                  {isSubmitting ? (
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  ) : (
-                    "Send Reset Code"
-                  )}
-                </button>
-              </form>
-            ) : (
-              <form className="space-y-4" onSubmit={resetPassword}>
-                <div>
-                  <label
-                    className="block text-sm font-medium text-neutral-300 mb-1.5"
-                    htmlFor="code"
-                  >
-                    Reset Code
-                  </label>
-                  <input
-                    type="text"
-                    id="code"
-                    value={code}
-                    onChange={(e) => setCode(e.target.value)}
-                    className="w-full bg-black/20 backdrop-blur-md border border-white/10 rounded-xl px-4 py-3 text-white placeholder-neutral-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                    placeholder="Enter the 6-digit code"
-                    required
-                  />
-                </div>
-                <div>
-                  <label
-                    className="block text-sm font-medium text-neutral-300 mb-1.5"
-                    htmlFor="password"
-                  >
-                    New Password
-                  </label>
-                  <input
-                    type="password"
-                    id="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full bg-black/20 backdrop-blur-md border border-white/10 rounded-xl px-4 py-3 text-white placeholder-neutral-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                    placeholder="••••••••"
-                    required
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={!isLoaded || isSubmitting}
-                  className="w-full bg-indigo-500 text-white font-semibold rounded-xl px-4 py-3 mt-4 hover:bg-indigo-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                >
-                  {isSubmitting ? (
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  ) : (
-                    "Reset Password"
-                  )}
-                </button>
-
-                <div className="mt-4 pt-2 text-center flex flex-col items-center">
-                  <button
-                    type="button"
-                    onClick={handleResendCode}
-                    disabled={resendCountdown > 0 || isSubmitting}
-                    className="text-sm font-medium text-neutral-400 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-neutral-400"
-                  >
-                    {resendCountdown > 0
-                      ? `Resend code in ${resendCountdown}s`
-                      : "Didn't receive the code? Resend"}
-                  </button>
-                </div>
-              </form>
-            )}
-
-            <div className="mt-8 pt-6 border-t border-white/10 text-center">
-              <Link
-                href="/sign-in"
-                className="text-sm text-neutral-400 hover:text-white transition-colors flex items-center justify-center space-x-2"
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  className="w-4 h-4"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <line x1="19" y1="12" x2="5" y2="12"></line>
-                  <polyline points="12 19 5 12 12 5"></polyline>
-                </svg>
-                <span>Back to sign in</span>
-              </Link>
+            <div className="flex items-center gap-6 text-[13px] text-text-secondary font-medium">
+              <span className="flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-sienna-brown" />
+                Encrypted Auth Sessions
+              </span>
+              <span>•</span>
+              <span className="flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-sienna-brown" />
+                Zero-Loss Recovery
+              </span>
             </div>
           </div>
+
+          {/* Right Column: Reset Card */}
+          <div className="lg:col-span-6 flex justify-center lg:justify-end w-full">
+            <div className="w-full max-w-md bg-bg-floating border border-border-subtle p-8 md:p-10 rounded-cards shadow-subtle-2 relative">
+              <div className="mb-6">
+                <h2 className="font-serif text-[1.85rem] text-text-primary tracking-tight mb-1">
+                  {successfulCreation ? "Enter Code" : "Forgot Password"}
+                </h2>
+                <p className="text-[14px] text-text-secondary font-sans">
+                  {successfulCreation
+                    ? `Verification code sent to ${email}`
+                    : "Enter your email to receive recovery instructions"}
+                </p>
+              </div>
+
+              {error && (
+                <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 rounded-inputs text-[13px] flex flex-col gap-3">
+                  <p className="leading-relaxed">{error}</p>
+                  {useGoogleLink && (
+                    <button
+                      onClick={handleGoogleOAuth}
+                      type="button"
+                      className="w-full flex items-center justify-center gap-2 bg-ink-black text-paper-white py-2 px-3 rounded-buttons font-medium text-[13px] hover:scale-[1.01] active:scale-[0.99] transition-all"
+                    >
+                      <span>Sign In with Google</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {!successfulCreation ? (
+                <form className="space-y-4" onSubmit={requestPasswordReset}>
+                  <div>
+                    <label
+                      htmlFor="email"
+                      className="block text-[12px] font-medium tracking-wide uppercase text-text-secondary mb-1.5"
+                    >
+                      Email address
+                    </label>
+                    <input
+                      type="email"
+                      id="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full bg-bg-secondary border border-border-subtle rounded-inputs px-4 py-3 text-[14px] text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-ink-black focus:border-ink-black transition-all"
+                      placeholder="name@company.com"
+                      required
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={!isLoaded || isSubmitting}
+                    className="w-full bg-ink-black text-paper-white rounded-buttons py-3 px-4 font-sans text-[14px] font-medium transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm mt-4"
+                  >
+                    {isSubmitting ? (
+                      <div className="w-4 h-4 border-2 border-paper-white border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      <>
+                        <span>Send Recovery Code</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </>
+                    )}
+                  </button>
+                </form>
+              ) : (
+                <form className="space-y-4" onSubmit={resetPassword}>
+                  <div>
+                    <label
+                      htmlFor="code"
+                      className="block text-[12px] font-medium tracking-wide uppercase text-text-secondary mb-1.5"
+                    >
+                      Verification Code
+                    </label>
+                    <input
+                      type="text"
+                      id="code"
+                      value={code}
+                      onChange={(e) => setCode(e.target.value)}
+                      className="w-full bg-bg-secondary border border-border-subtle rounded-inputs px-4 py-3 text-[14px] text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-ink-black focus:border-ink-black transition-all text-center tracking-widest font-mono text-lg"
+                      placeholder="123456"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="new-password"
+                      className="block text-[12px] font-medium tracking-wide uppercase text-text-secondary mb-1.5"
+                    >
+                      New Password
+                    </label>
+                    <input
+                      type="password"
+                      id="new-password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="w-full bg-bg-secondary border border-border-subtle rounded-inputs px-4 py-3 text-[14px] text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-ink-black focus:border-ink-black transition-all"
+                      placeholder="••••••••"
+                      required
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={!isLoaded || isSubmitting}
+                    className="w-full bg-ink-black text-paper-white rounded-buttons py-3 px-4 font-sans text-[14px] font-medium transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50"
+                  >
+                    Set New Password & Sign In
+                  </button>
+
+                  <div className="flex items-center justify-between text-[12px] text-text-secondary pt-2">
+                    <button
+                      type="button"
+                      onClick={handleResendCode}
+                      disabled={resendCountdown > 0 || isSubmitting}
+                      className="hover:text-text-primary transition-colors disabled:opacity-50"
+                    >
+                      {resendCountdown > 0 ? `Resend code in ${resendCountdown}s` : "Resend Code"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSuccessfulCreation(false)}
+                      className="hover:text-text-primary transition-colors"
+                    >
+                      Change Email
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              <div className="mt-8 pt-6 border-t border-border-subtle text-center">
+                <Link
+                  href="/sign-in"
+                  className="text-[13px] text-text-secondary hover:text-text-primary transition-colors"
+                >
+                  ← Back to Sign In
+                </Link>
+              </div>
+            </div>
+          </div>
+
         </div>
-      </div>
+      </main>
+
+      {/* Footer minimal */}
+      <footer className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-12 py-6 text-center text-[13px] text-text-muted">
+        PitchSoup © 2026 • The Ultimate Pitch Deck Engine
+      </footer>
     </div>
   );
 }

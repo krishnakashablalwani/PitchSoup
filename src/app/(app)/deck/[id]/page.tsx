@@ -1,10 +1,9 @@
-import { supabase } from '@/lib/supabase';
+import { getPitchById, DEMO_PITCH_SLIDES } from '@/lib/mockPitch';
 import { auth } from "@clerk/nextjs/server";
 import { notFound, redirect } from "next/navigation";
 import DeckClient from "./DeckClient";
 
 export const dynamic = 'force-dynamic';
-
 
 export default async function DeckPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -14,22 +13,23 @@ export default async function DeckPage({ params }: { params: Promise<{ id: strin
     redirect("/sign-in");
   }
 
-  const { data: pitch, error } = await supabase.from('Pitch')
-    .select('*')
-    .eq('id', id)
-    .single();
+  const pitch = await getPitchById(id);
 
-  if (error || !pitch) {
+  if (!pitch) {
     notFound();
   }
 
   let parsedDeck = [];
   try {
     if (pitch.deckData) {
-      parsedDeck = JSON.parse(pitch.deckData);
+      parsedDeck = typeof pitch.deckData === 'string' ? JSON.parse(pitch.deckData) : pitch.deckData;
     }
   } catch (e) {
     console.error("Failed to parse deck data", e);
+  }
+
+  if (!parsedDeck || parsedDeck.length === 0) {
+    parsedDeck = DEMO_PITCH_SLIDES;
   }
 
   return (

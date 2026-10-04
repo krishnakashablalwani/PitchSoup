@@ -51,3 +51,24 @@ export async function updatePitch(pitchId: string, formData: FormData) {
   revalidatePath('/dashboard');
   revalidatePath(`/deck/${pitchId}`);
 }
+
+export async function updatePitchDeckData(pitchId: string, deckData: any[]) {
+  const { userId } = await auth();
+  
+  if (!userId) {
+    return { success: false, error: 'Unauthorized' };
+  }
+
+  const { error } = await supabase.from('Pitch')
+    .update({ deckData: JSON.stringify(deckData) })
+    .eq('id', pitchId)
+    .eq('userId', userId);
+
+  if (error) {
+    console.error(error);
+    return { success: false, error: 'Failed to update pitch deck' };
+  }
+
+  revalidatePath(`/deck/${pitchId}`);
+  return { success: true };
+}

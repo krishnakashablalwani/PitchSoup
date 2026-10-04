@@ -3,8 +3,16 @@
 import { useUser, useAuth } from "@clerk/nextjs";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
-import Image from "next/image";
-import Link from "next/link";
+import {
+  Settings,
+  User,
+  Palette,
+  Sun,
+  Moon,
+  Laptop,
+  LogOut,
+  AlertTriangle,
+} from "lucide-react";
 
 export default function SettingsPage() {
   const { theme, setTheme, resolvedTheme } = useTheme();
@@ -17,39 +25,52 @@ export default function SettingsPage() {
   }, []);
 
   return (
-    <div className="flex-1 p-6 md:p-10 h-full overflow-y-auto">
-      <div className="max-w-3xl mx-auto space-y-8">
-        {/* Page Title */}
-        <div>
-          <h1 className="text-3xl md:text-4xl font-headline-xl font-bold tracking-tight">
-            Settings
-          </h1>
-          <p className="text-muted-foreground mt-2 text-lg font-body-md">
-            Manage your profile and preferences.
-          </p>
-        </div>
+    <div className="flex-1 min-h-screen bg-bg-primary text-text-primary p-6 md:p-10 overflow-y-auto">
+      <div className="max-w-4xl w-full mx-auto space-y-6">
+        {/* Editorial Header */}
+        <header className="border-b border-border-subtle pb-6">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-blush-peach/40 text-sienna-brown flex items-center justify-center shrink-0">
+              <Settings className="w-5 h-5" />
+            </div>
+            <div>
+              <h1 className="font-serif text-2xl md:text-3xl text-text-primary font-medium tracking-tight">
+                Account &amp; Preferences
+              </h1>
+              <p className="text-text-secondary text-sm mt-0.5 font-sans">
+                Manage your founder profile and custom workspace appearance.
+              </p>
+            </div>
+          </div>
+        </header>
 
-        {/* Profile Section */}
-        <section className="glass-panel rounded-3xl p-8">
-          <h2 className="text-xl font-headline-md font-semibold mb-6 flex items-center gap-2">
-            <span className="material-symbols-outlined text-primary">person</span>
-            Profile
-          </h2>
-          <div className="flex items-center gap-6">
+        {/* Profile Card */}
+        <section className="bg-bg-floating border border-border-subtle rounded-2xl p-6 md:p-8 shadow-subtle space-y-5">
+          <div className="flex items-center gap-2 pb-2 border-b border-border-subtle">
+            <User className="w-4 h-4 text-sienna-brown" />
+            <h2 className="font-serif text-base font-medium text-text-primary">
+              Founder Profile
+            </h2>
+          </div>
+
+          <div className="flex items-center gap-5">
             <img
-              src={user?.imageUrl || "https://api.dicebear.com/7.x/notionists/svg?seed=placeholder"}
+              src={
+                user?.imageUrl ||
+                "https://api.dicebear.com/7.x/notionists/svg?seed=placeholder"
+              }
               alt="Avatar"
-              className="w-20 h-20 rounded-2xl border-2 border-border shadow-lg"
+              className="w-16 h-16 rounded-2xl border border-border-subtle shadow-subtle object-cover bg-mist-gray"
             />
-            <div className="flex-1 space-y-1">
-              <h3 className="text-2xl font-bold">
+            <div className="space-y-1">
+              <h3 className="font-serif text-lg font-medium text-text-primary">
                 {user?.firstName} {user?.lastName}
               </h3>
-              <p className="text-muted-foreground font-body-md">
+              <p className="text-xs text-text-secondary font-sans">
                 {user?.primaryEmailAddress?.emailAddress}
               </p>
-              <p className="text-xs text-muted-foreground/60 font-mono-data mt-2">
-                Member since{" "}
+              <p className="text-[11px] text-text-muted font-mono pt-1">
+                Workspace Member since{" "}
                 {user?.createdAt
                   ? new Date(user.createdAt).toLocaleDateString("en-US", {
                       month: "long",
@@ -61,67 +82,74 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        {/* Appearance Section */}
-        <section className="glass-panel rounded-3xl p-8">
-          <h2 className="text-xl font-headline-md font-semibold mb-6 flex items-center gap-2">
-            <span className="material-symbols-outlined text-primary">palette</span>
-            Appearance
-          </h2>
-          <p className="text-muted-foreground font-body-md mb-6">
-            Choose how PitchSoup looks for you. Your preference is saved locally.
+        {/* Appearance Card */}
+        <section className="bg-bg-floating border border-border-subtle rounded-2xl p-6 md:p-8 shadow-subtle space-y-5">
+          <div className="flex items-center gap-2 pb-2 border-b border-border-subtle">
+            <Palette className="w-4 h-4 text-sienna-brown" />
+            <h2 className="font-serif text-base font-medium text-text-primary">
+              Theme &amp; Appearance
+            </h2>
+          </div>
+
+          <p className="text-xs text-text-secondary font-sans">
+            Choose how PitchSoup displays on your workspace. Preferences are persisted automatically.
           </p>
-          <div className="grid grid-cols-3 gap-4">
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {[
-              { key: "light", icon: "light_mode", label: "Light" },
-              { key: "dark", icon: "dark_mode", label: "Dark" },
-              { key: "system", icon: "desktop_windows", label: "System" },
+              { key: "light", icon: Sun, label: "Warm Editorial (Light)" },
+              { key: "dark", icon: Moon, label: "Obsidian (Dark)" },
+              { key: "system", icon: Laptop, label: "System Sync" },
             ].map((opt) => {
+              const Icon = opt.icon;
               const isActive =
                 mounted &&
                 (opt.key === "system"
                   ? theme === "system"
                   : resolvedTheme === opt.key && theme !== "system");
+
               return (
                 <button
                   key={opt.key}
                   onClick={() => setTheme(opt.key)}
-                  className={`p-6 rounded-2xl border-2 transition-all text-center ${
+                  className={`p-4 rounded-xl border text-center transition-all flex flex-col items-center justify-center gap-2.5 ${
                     isActive
-                      ? "border-primary bg-primary/10 text-primary shadow-md"
-                      : "border-border bg-foreground/5 hover:bg-foreground/10 text-foreground hover:border-primary/30"
+                      ? "border-sienna-brown/50 bg-blush-peach/25 text-sienna-brown dark:text-blush-peach font-semibold shadow-xs"
+                      : "border-border-subtle bg-bg-secondary hover:bg-bg-card text-text-secondary hover:text-text-primary"
                   }`}
                 >
-                  <span className="material-symbols-outlined block mb-3 text-4xl">
-                    {opt.icon}
-                  </span>
-                  <span className="font-semibold block font-body-md">
-                    {opt.label}
-                  </span>
+                  <Icon className="w-5 h-5" />
+                  <span className="text-xs font-medium">{opt.label}</span>
                 </button>
               );
             })}
           </div>
         </section>
 
-        {/* Danger Zone */}
-        <section className="glass-panel rounded-3xl p-8 border-destructive/20">
-          <h2 className="text-xl font-headline-md font-semibold mb-6 flex items-center gap-2 text-destructive">
-            <span className="material-symbols-outlined">warning</span>
-            Account
-          </h2>
-          <div className="flex items-center justify-between">
+        {/* Session / Danger Zone */}
+        <section className="bg-bg-floating border border-rose-500/20 rounded-2xl p-6 md:p-8 shadow-subtle space-y-4">
+          <div className="flex items-center gap-2 pb-2 border-b border-border-subtle">
+            <AlertTriangle className="w-4 h-4 text-rose-500" />
+            <h2 className="font-serif text-base font-medium text-text-primary">
+              Session &amp; Security
+            </h2>
+          </div>
+
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <p className="font-semibold">Sign Out</p>
-              <p className="text-sm text-muted-foreground">
-                End your current session and return to the landing page.
+              <p className="text-xs font-semibold text-text-primary">
+                Sign Out of Workspace
+              </p>
+              <p className="text-xs text-text-secondary mt-0.5 font-sans">
+                Securely terminate your current session on this device.
               </p>
             </div>
             <button
               onClick={() => signOut({ redirectUrl: "/" })}
-              className="px-6 py-3 rounded-xl bg-destructive/10 text-destructive hover:bg-destructive/20 border border-destructive/20 font-semibold transition-colors flex items-center gap-2"
+              className="px-4 py-2 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 border border-rose-500/30 text-xs font-medium transition-colors flex items-center gap-1.5 w-fit"
             >
-              <span className="material-symbols-outlined text-[18px]">logout</span>
-              Sign Out
+              <LogOut className="w-3.5 h-3.5" />
+              <span>Sign Out</span>
             </button>
           </div>
         </section>

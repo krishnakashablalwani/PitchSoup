@@ -22,7 +22,7 @@ import { useAuth, UserButton } from "@clerk/nextjs";
 
 const fadeUp: any = {
   hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } },
 };
 
 const staggerContainer: any = {
@@ -36,21 +36,25 @@ export default function LandingPage() {
 
   useEffect(() => {
     return scrollY.on("change", (latest) => {
-      setIsScrolled(latest > 60);
+      setIsScrolled(latest > 50);
     });
   }, [scrollY]);
 
   return (
-    <div className="min-h-screen selection:bg-primary/30 font-sans overflow-hidden">
-      {/* Solid Background (No Gradients) */}
-
+    <div className="min-h-screen bg-bg-primary font-sans overflow-x-hidden text-text-primary relative selection:bg-blush-peach selection:text-sienna-brown">
+      {/* Global Background Texture */}
+      <div className="fixed inset-0 pointer-events-none z-0 opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+      
       <Navbar isScrolled={isScrolled} />
 
-      <main className="relative z-10 flex flex-col items-center">
+      <main className="relative z-10 flex flex-col items-center w-full">
         <HeroSection />
         <ProblemSection />
         <SolutionSection />
         <FeaturesSection />
+        <TestimonialsSection />
+        <PricingSection />
+        <FinalCTASection />
       </main>
 
       <Footer />
@@ -58,54 +62,46 @@ export default function LandingPage() {
   );
 }
 
+import { ThemeToggle } from "@/components/ThemeToggle";
+
 function Navbar({ isScrolled }: { isScrolled: boolean }) {
   const { isSignedIn, isLoaded } = useAuth();
 
   return (
-    <motion.header
-      className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-6 px-4"
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+    <header
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        isScrolled ? "bg-bg-primary/90 backdrop-blur-xl border-b border-border-subtle shadow-sm py-2" : "bg-transparent border-transparent py-4"
+      }`}
     >
-      <motion.nav
-        layout
-        className={`flex items-center justify-between overflow-hidden transition-all duration-500 ease-out ${
-          isScrolled
-            ? "w-full max-w-4xl bg-black/40 backdrop-blur-xl border border-white/10 shadow-2xl rounded-full py-3 px-6"
-            : "w-full max-w-7xl bg-transparent border-transparent py-4 px-2"
-        }`}
-      >
-        <Link href="/" className="flex items-center space-x-2 group">
-          <div className="relative w-8 h-8 rounded overflow-hidden group-hover:scale-105 transition-transform">
-            <Image src="/logo.png" alt="Logo" fill className="object-cover" />
+      <nav className="w-full max-w-7xl mx-auto px-6 md:px-12 flex items-center justify-between">
+        <Link href="/" className="flex items-center space-x-3 group">
+          <div className="relative w-8 h-8 rounded-images overflow-hidden group-hover:scale-105 transition-transform shadow-sm">
+            <Image src="/logo.png" alt="Logo" fill sizes="32px" className="object-cover" />
           </div>
-          <motion.span
-            layout="position"
-            className="font-bold text-lg tracking-wide hidden sm:block"
-          >
+          <span className="font-bold text-[18px] tracking-tight hidden sm:block font-serif text-text-primary">
             PitchSoup
-          </motion.span>
+          </span>
         </Link>
 
-        <div className="hidden md:flex items-center space-x-8 text-sm font-medium text-[#CCCCFF]/70">
-          <Link href="#problem" className="hover:text-white transition-colors">
-            The Problem
+        <div className="hidden md:flex items-center space-x-8 text-[14px] font-sans font-medium text-text-secondary">
+          <Link href="#problem" className="hover:text-text-primary transition-colors">
+            Problem
           </Link>
-          <Link href="#solution" className="hover:text-white transition-colors">
-            Solution
+          <Link href="#solution" className="hover:text-text-primary transition-colors">
+            Kitchen
           </Link>
-          <Link href="#features" className="hover:text-white transition-colors">
+          <Link href="#features" className="hover:text-text-primary transition-colors">
             Features
           </Link>
         </div>
 
         <div className="flex items-center space-x-4">
+          <ThemeToggle />
           {!isLoaded ? null : isSignedIn ? (
             <>
               <Link
                 href="/dashboard"
-                className="text-sm font-bold text-white hover:text-[#CCCCFF] transition-colors mr-2"
+                className="text-[14px] font-medium text-text-primary hover:text-sienna-brown transition-colors mr-2"
               >
                 Dashboard
               </Link>
@@ -115,139 +111,140 @@ function Navbar({ isScrolled }: { isScrolled: boolean }) {
             <>
               <Link
                 href="/sign-in"
-                className="text-sm font-medium text-white hover:text-[#CCCCFF] transition-colors"
+                className="text-[14px] font-medium text-text-primary hover:text-sienna-brown transition-colors mr-2 hidden sm:block"
               >
                 Log In
               </Link>
               <Link
                 href="/sign-up"
-                className="px-4 py-2 text-sm font-bold bg-white text-black rounded-full hover:bg-gray-200 transition-colors shadow-[0_0_15px_rgba(255,255,255,0.3)]"
+                className="px-5 py-2 text-[14px] font-sans font-semibold bg-ink-black text-paper-white rounded-buttons hover:bg-ink-black/90 hover:scale-105 active:scale-95 transition-all shadow-sm"
               >
                 Start Cooking
               </Link>
             </>
           )}
         </div>
-      </motion.nav>
-    </motion.header>
+      </nav>
+    </header>
   );
 }
 
 function HeroSection() {
   return (
-    <section className="w-full relative mx-auto px-6 pt-40 pb-32 flex flex-col items-center text-center overflow-hidden min-h-[90vh] justify-center">
-      {/* Translucent Periwinkle Waves / Aurora Background */}
-      <div className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center overflow-hidden">
-        <motion.div 
-          animate={{ 
-            scale: [1, 1.2, 1],
-            rotate: [0, 5, -5, 0],
-            opacity: [0.1, 0.2, 0.1] 
-          }}
-          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-[-10%] left-[-10%] w-[70vw] h-[50vh] bg-[#8a8aff] rounded-[100%] blur-[120px] mix-blend-screen"
-        />
-        <motion.div 
-          animate={{ 
-            scale: [1, 1.3, 1],
-            rotate: [0, -10, 5, 0],
-            opacity: [0.15, 0.25, 0.15] 
-          }}
-          transition={{ duration: 20, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-          className="absolute bottom-[-20%] right-[-10%] w-[80vw] h-[60vh] bg-[#ccccff] rounded-[100%] blur-[130px] mix-blend-screen"
-        />
-        <motion.div 
-          animate={{ 
-            scale: [1, 1.1, 1],
-            y: [0, -50, 0],
-            opacity: [0.1, 0.15, 0.1] 
-          }}
-          transition={{ duration: 18, repeat: Infinity, ease: "easeInOut", delay: 5 }}
-          className="absolute top-[20%] left-[20%] w-[60vw] h-[40vh] bg-[#6366F1] rounded-[100%] blur-[150px] mix-blend-screen"
-        />
-      </div>
+    <section className="w-full relative mx-auto px-6 md:px-12 pt-32 pb-24 flex flex-col items-center text-center min-h-[85vh] justify-center bg-bg-primary overflow-hidden">
+      
+      {/* Very Soft Ambient Background Orbs */}
+      <div className="absolute top-[-20%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-blush-peach/30 blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[-20%] right-[-10%] w-[60vw] h-[60vw] rounded-full bg-mist-gray/40 blur-[150px] pointer-events-none" />
 
-      <div className="relative z-10 flex flex-col items-center max-w-7xl mx-auto">
+      <div className="relative z-10 flex flex-col items-center max-w-4xl mx-auto w-full">
+        
         <motion.div
           initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
+          animate="visible"
           variants={fadeUp}
-          className="inline-flex items-center space-x-2 bg-white/5 border border-white/10 rounded-full px-4 py-1.5 mb-8 backdrop-blur-md"
+          className="mb-6 px-3 py-1 rounded-full border border-sienna-brown/20 bg-blush-peach/30 backdrop-blur-md text-sienna-brown text-[11px] font-semibold tracking-wide uppercase flex items-center gap-1.5 shadow-sm"
         >
-          <Sparkles className="w-4 h-4 text-[#8a8aff]" />
-          <span className="text-sm font-medium text-[#CCCCFF]">
-            The Ultimate Pitch Deck Generator
-          </span>
+          <Sparkles className="w-3.5 h-3.5" />
+          The Ultimate Pitch Deck Generator
         </motion.div>
 
         <motion.h1
           initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
+          animate="visible"
           variants={fadeUp}
-          className="text-5xl md:text-7xl lg:text-8xl font-extrabold tracking-tight mb-8 leading-[1.1]"
+          className="font-serif text-[3rem] md:text-[4.5rem] lg:text-[5.5rem] leading-[1.05] tracking-tight text-text-primary mb-6"
         >
-          Cook Your Pitch. <br />
-          <span className="text-white">Taste Test It.</span>
+          Cook Your Pitch.<br />
+          <i className="text-text-secondary font-light">Taste Test It.</i>
         </motion.h1>
 
         <motion.p
           initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
+          animate="visible"
           variants={fadeUp}
-          className="text-xl text-[#CCCCFF]/80 max-w-2xl mb-12"
+          className="text-[1.1rem] md:text-[1.25rem] text-text-secondary max-w-xl mb-10 font-sans font-light leading-relaxed"
         >
           Throw in your raw idea. We'll cook up the deck and test it in the
-          kitchen.
+          kitchen against AI investors.
         </motion.p>
 
         <motion.div
           initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
+          animate="visible"
           variants={fadeUp}
-          className="flex flex-col sm:flex-row items-center gap-4"
+          className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto"
         >
           <Link
             href="/sign-up"
-            className="group relative px-8 py-4 bg-white text-black font-bold text-lg rounded-full overflow-hidden transition-all hover:bg-gray-200 shadow-[0_0_30px_rgba(138,138,255,0.3)]"
+            className="group w-full sm:w-auto px-8 py-3.5 bg-ink-black text-paper-white font-semibold font-sans text-[15px] rounded-buttons overflow-hidden transition-all hover:scale-[1.02] hover:shadow-md active:scale-95 flex items-center justify-center"
           >
-            <span className="relative flex items-center transition-colors">
-              Start Cooking Now{" "}
-              <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </span>
+            Start Cooking Now
+            <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </Link>
           <Link
             href="#features"
-            className="px-8 py-4 text-white font-bold text-lg rounded-full border border-white/20 hover:bg-white/10 transition-colors backdrop-blur-sm"
+            className="w-full sm:w-auto px-8 py-3.5 bg-bg-primary text-ink-black border border-border-subtle shadow-sm font-semibold font-sans text-[15px] rounded-buttons hover:bg-bg-secondary hover:shadow-sm transition-all active:scale-95 text-center"
           >
             See How it Works
           </Link>
         </motion.div>
       </div>
+      
+      {/* Floating UI Artifacts - Enhanced with Glassmorphism & Animation */}
+      <motion.div 
+        animate={{ y: [0, -10, 0] }}
+        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute bottom-[5%] left-[2%] lg:left-[5%] hidden md:flex flex-col bg-bg-card/80 backdrop-blur-xl border border-border-subtle shadow-subtle-3 rounded-elevatedcards p-4 w-[240px]"
+      >
+        <div className="flex items-center justify-between mb-4">
+          <span className="text-[13px] font-sans font-semibold text-text-primary">TAM / SAM / SOM</span>
+          <div className="w-2 h-2 rounded-full bg-sienna-brown shadow-[0_0_8px_rgba(160,82,45,0.5)]"></div>
+        </div>
+        <div className="flex gap-2 items-end h-20 mb-1">
+          <div className="w-1/3 bg-mist-gray h-[40%] rounded-t-md transition-all duration-1000 hover:h-[50%]" />
+          <div className="w-1/3 bg-blush-peach h-[70%] rounded-t-md transition-all duration-1000 hover:h-[80%]" />
+          <div className="w-1/3 bg-ink-black h-[100%] rounded-t-md transition-all duration-1000 hover:h-[95%]" />
+        </div>
+      </motion.div>
+
+      <motion.div 
+        animate={{ y: [0, 15, 0] }}
+        transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+        className="absolute top-[20%] right-[2%] lg:right-[5%] hidden md:flex flex-col bg-bg-card/80 backdrop-blur-xl border border-border-subtle shadow-subtle-3 rounded-elevatedcards p-5 w-[250px]"
+      >
+        <div className="flex items-center gap-3 mb-3 border-b border-border-subtle pb-2">
+          <div className="w-8 h-8 rounded-full bg-blush-peach flex items-center justify-center text-sienna-brown font-serif text-[14px] shadow-inner">VC</div>
+          <div className="flex flex-col">
+            <span className="text-[13px] font-sans font-bold text-text-primary">AI Shark</span>
+            <span className="text-[11px] text-text-tertiary">Partner, Sequoia</span>
+          </div>
+        </div>
+        <p className="text-[12px] font-sans text-text-secondary leading-relaxed italic">
+          "Your GTM strategy relies heavily on organic growth, but this is a crowded space. How do you acquire your first 100 enterprise customers?"
+        </p>
+      </motion.div>
     </section>
   );
 }
 
 function ProblemSection() {
   return (
-    <section id="problem" className="w-full py-32 bg-background relative">
-      <div className="absolute top-0 left-0 w-full h-px bg-white/10" />
-      <div className="max-w-7xl mx-auto px-6">
+    <section id="problem" className="w-full py-24 bg-bg-secondary relative border-t border-border-subtle">
+      <div className="max-w-6xl mx-auto px-6 md:px-12">
         <motion.div
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
           variants={fadeUp}
-          className="text-center mb-20"
+          className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">The Problem</h2>
-          <p className="text-xl text-[#CCCCFF]/60 max-w-3xl mx-auto">
-            Founders waste weeks tweaking slide designs instead of building
-            product. When they finally pitch, they get destroyed by basic VC
-            questions they never practiced for.
+          <span className="text-sienna-brown font-semibold tracking-widest uppercase text-xs mb-3 block">The Reality</span>
+          <h2 className="font-serif text-[2.5rem] md:text-[3rem] leading-tight text-text-primary mb-4">Founders waste time.</h2>
+          <p className="font-sans text-[1.1rem] text-text-secondary max-w-2xl mx-auto leading-relaxed font-light">
+            You're spending 100+ hours tweaking slide designs instead of building
+            product. And when you finally pitch, you get destroyed by basic VC
+            questions you never practiced for.
           </p>
         </motion.div>
 
@@ -256,35 +253,35 @@ function ProblemSection() {
           whileInView="visible"
           viewport={{ once: true }}
           variants={staggerContainer}
-          className="grid md:grid-cols-3 gap-8"
+          className="grid md:grid-cols-3 gap-6"
         >
           {[
             {
               icon: LineChart,
               title: "Wasted Time",
-              desc: "100+ hours spent on PowerPoint alignment instead of customer validation.",
+              desc: "Hundreds of hours spent on PowerPoint alignment instead of customer validation.",
             },
             {
               icon: BrainCircuit,
               title: "Blind Spots",
-              desc: "Crucial market sizing and business model flaws discovered only during the pitch.",
+              desc: "Crucial market sizing and business model flaws discovered only during the actual pitch.",
             },
             {
               icon: Target,
               title: "Missed Targets",
-              desc: "Failing to answer VC interrogations under pressure blows the deal.",
+              desc: "Failing to answer aggressive VC interrogations under pressure blows the entire deal.",
             },
           ].map((item, i) => (
             <motion.div
               key={i}
               variants={fadeUp}
-              className="bg-[#0A0A0A] p-8 rounded-3xl border border-white/5 hover:border-[#CCCCFF]/30 transition-colors group"
+              className="bg-bg-primary p-8 rounded-cards border border-border-subtle group hover:shadow-subtle-2 hover:-translate-y-1 transition-all duration-300"
             >
-              <div className="w-12 h-12 bg-[#CCCCFF]/10 text-[#CCCCFF] rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <item.icon className="w-6 h-6" />
+              <div className="w-12 h-12 bg-mist-gray rounded-xl flex items-center justify-center mb-5 group-hover:scale-105 group-hover:bg-blush-peach transition-all duration-300">
+                <item.icon className="w-6 h-6 text-text-primary group-hover:text-sienna-brown transition-colors" />
               </div>
-              <h3 className="text-xl font-bold mb-3">{item.title}</h3>
-              <p className="text-[#CCCCFF]/60">{item.desc}</p>
+              <h3 className="font-sans text-[1.25rem] font-bold text-text-primary mb-3">{item.title}</h3>
+              <p className="font-sans text-[1rem] text-text-secondary leading-relaxed">{item.desc}</p>
             </motion.div>
           ))}
         </motion.div>
@@ -295,24 +292,26 @@ function ProblemSection() {
 
 function SolutionSection() {
   return (
-    <section id="solution" className="w-full py-32 relative">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
+    <section id="solution" className="w-full py-24 bg-bg-primary relative border-t border-border-subtle overflow-hidden">
+      <div className="max-w-6xl mx-auto px-6 md:px-12">
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
           <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
             variants={staggerContainer}
+            className="order-2 lg:order-1"
           >
+            <span className="text-sienna-brown font-semibold tracking-widest uppercase text-xs mb-3 block">The Solution</span>
             <motion.h2
               variants={fadeUp}
-              className="text-4xl md:text-5xl font-bold mb-6"
+              className="font-serif text-[2.5rem] md:text-[3rem] leading-tight text-text-primary mb-6"
             >
               The PitchSoup Kitchen
             </motion.h2>
             <motion.p
               variants={fadeUp}
-              className="text-xl text-[#CCCCFF]/70 mb-8"
+              className="font-sans text-[1.1rem] text-text-secondary mb-8 leading-relaxed font-light"
             >
               We leverage Google Gemini 2.5 Flash to transform your brain-dump
               into a structured, VC-ready presentation. Then, our AI Sharks
@@ -321,18 +320,18 @@ function SolutionSection() {
 
             <motion.ul variants={staggerContainer} className="space-y-4">
               {[
-                "Instant structural generation",
-                "Automated TAM/SAM/SOM insights",
+                "Instant structural generation in seconds",
+                "Automated TAM/SAM/SOM demographic insights",
                 "Real-time VC interrogation simulation",
-                "Constructive feedback loop",
+                "Constructive feedback loop & scoring",
               ].map((text, i) => (
                 <motion.li
                   key={i}
                   variants={fadeUp}
-                  className="flex items-center text-lg"
+                  className="flex items-center font-sans text-[1rem] text-text-primary font-medium"
                 >
-                  <div className="w-6 h-6 rounded-full bg-[#6366F1]/20 flex items-center justify-center mr-4">
-                    <div className="w-2 h-2 rounded-full bg-[#6366F1]" />
+                  <div className="w-6 h-6 rounded-full bg-blush-peach text-sienna-brown flex items-center justify-center mr-3 shrink-0 shadow-sm">
+                    <span className="material-symbols-outlined text-[14px]">check</span>
                   </div>
                   {text}
                 </motion.li>
@@ -341,30 +340,46 @@ function SolutionSection() {
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="relative"
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="order-1 lg:order-2 relative"
           >
-            <div className="relative bg-[#111827] border border-white/10 rounded-3xl p-2 shadow-2xl overflow-hidden aspect-square md:aspect-[4/3] flex flex-col">
-              <div className="h-8 flex items-center px-4 border-b border-white/10 space-x-2">
-                <div className="w-3 h-3 rounded-full bg-white/20" />
-                <div className="w-3 h-3 rounded-full bg-white/40" />
-                <div className="w-3 h-3 rounded-full bg-white/60" />
-              </div>
-              <div className="flex-1 bg-black p-8 flex flex-col items-center justify-center text-center">
-                <h3 className="text-3xl font-bold text-white mb-4">
-                  Slide 4: The Market
-                </h3>
-                <div className="w-full max-w-sm h-32 border border-white/30 rounded-xl bg-white/5 flex items-end justify-between p-4 mb-4">
-                  <div className="w-1/4 bg-white/40 h-1/3 rounded-t" />
-                  <div className="w-1/4 bg-white/60 h-2/3 rounded-t" />
-                  <div className="w-1/4 bg-white h-full rounded-t" />
-                </div>
-                <p className="text-[#CCCCFF]/50 text-sm">
-                  Gemini generating TAM/SAM/SOM breakdown...
+            <div className="absolute inset-0 bg-blush-peach/30 blur-[60px] rounded-full transform -translate-x-8 translate-y-8" />
+            
+            <div className="bg-bg-primary rounded-[32px] p-8 flex flex-col items-center justify-center text-center shadow-subtle-2 border border-border-subtle relative z-10 overflow-hidden group">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-sienna-brown/20 via-sienna-brown to-sienna-brown/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              
+              <h3 className="font-serif text-[1.5rem] text-text-primary mb-5">
+                Slide 4: The Market
+              </h3>
+              
+              <div className="w-full bg-mist-gray/50 rounded-xl p-5 mb-6 border border-border-subtle">
+                <p className="font-sans text-[1.25rem] text-text-primary font-bold flex justify-between items-center mb-2">
+                  <span>TAM</span> <span className="text-sienna-brown">$12B</span>
                 </p>
+                <p className="font-sans text-[1.1rem] text-text-secondary font-medium flex justify-between items-center mb-1">
+                  <span>SAM</span> <span>$4B</span>
+                </p>
+                <p className="font-sans text-[0.95rem] text-text-tertiary flex justify-between items-center">
+                  <span>SOM</span> <span>$150M</span>
+                </p>
+              </div>
+
+              <div className="w-full h-32 flex items-end justify-center p-2 gap-2">
+                <motion.div 
+                  initial={{ height: "0%" }} whileInView={{ height: "33%" }} transition={{ duration: 0.8, delay: 0.2 }}
+                  className="w-1/3 bg-mist-gray rounded-t-lg" 
+                />
+                <motion.div 
+                  initial={{ height: "0%" }} whileInView={{ height: "66%" }} transition={{ duration: 0.8, delay: 0.4 }}
+                  className="w-1/3 bg-blush-peach rounded-t-lg" 
+                />
+                <motion.div 
+                  initial={{ height: "0%" }} whileInView={{ height: "100%" }} transition={{ duration: 0.8, delay: 0.6 }}
+                  className="w-1/3 bg-ink-black rounded-t-lg shadow-md" 
+                />
               </div>
             </div>
           </motion.div>
@@ -375,10 +390,133 @@ function SolutionSection() {
 }
 
 function FeaturesSection() {
+  const features = [
+    {
+      title: "AI Pitch Deck Generation",
+      desc: "Transforms raw startup ideas into full 12-slide pitch decks in seconds. It writes the investment narrative, estimates TAM/SAM/SOM market demographics, generates speaker notes, and intelligently curates beautiful layouts.",
+      graphic: (
+        <div className="w-full aspect-square md:aspect-[4/3] bg-bg-primary border border-border-subtle rounded-cards p-6 shadow-subtle-2 flex flex-col gap-4 relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-blush-peach blur-[40px] rounded-full group-hover:scale-150 transition-transform duration-700" />
+          
+          <div className="w-full flex justify-between items-center bg-bg-card p-3 rounded-lg border border-border-subtle relative z-10">
+            <div className="flex gap-1.5">
+              <div className="w-2.5 h-2.5 rounded-full bg-border-subtle" />
+              <div className="w-2.5 h-2.5 rounded-full bg-border-subtle" />
+            </div>
+            <div className="w-16 h-3 bg-mist-gray rounded-full" />
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4 flex-1 relative z-10">
+            <div className="bg-bg-card rounded-xl border border-border-subtle p-3 flex flex-col gap-3 shadow-sm group-hover:-translate-y-1 transition-transform duration-500">
+              <div className="w-1/2 h-2 bg-mist-gray rounded-full" />
+              <div className="w-full flex-1 bg-mist-gray/50 rounded-lg" />
+            </div>
+            <div className="bg-bg-card rounded-xl border border-border-subtle p-3 flex flex-col gap-3 shadow-sm group-hover:translate-y-1 transition-transform duration-500 delay-100">
+              <div className="w-1/2 h-2 bg-mist-gray rounded-full" />
+              <div className="w-full flex-1 bg-blush-peach rounded-lg" />
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: "Interactive Deck Studio",
+      desc: "A premium presentation interface for your generated pitches. Features include responsive visual scaling, seamless keyboard navigation, automated AI voiceovers, PDF exporting, and instant public link sharing.",
+      graphic: (
+        <div className="w-full aspect-square md:aspect-[4/3] bg-bg-card border border-border-subtle rounded-cards overflow-hidden shadow-subtle-2 flex flex-col group relative">
+          <div className="absolute bottom-[-20%] left-[-20%] w-48 h-48 bg-mist-gray blur-[50px] rounded-full group-hover:bg-blush-peach/40 transition-colors duration-1000" />
+          
+          <div className="h-10 border-b border-border-subtle flex items-center px-4 space-x-1.5 bg-bg-primary relative z-10">
+            <div className="w-2.5 h-2.5 rounded-full bg-border-subtle" />
+            <div className="w-2.5 h-2.5 rounded-full bg-border-subtle" />
+            <div className="w-2.5 h-2.5 rounded-full bg-border-subtle" />
+            <div className="ml-3 w-32 h-4 bg-bg-card rounded border border-border-subtle mx-auto" />
+          </div>
+          
+          <div className="p-6 flex flex-col items-center justify-center flex-1 relative z-10">
+            <div className="w-full aspect-video bg-bg-primary rounded-lg border border-border-subtle shadow-sm flex flex-col justify-center items-center p-4">
+               <div className="w-2/3 h-4 bg-ink-black rounded-md mb-4" />
+               <div className="w-1/3 h-2 bg-mist-gray rounded-md" />
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: "VC Stress Test Simulator",
+      desc: "An AI-driven interrogation tool that acts like a skeptical venture capitalist. It actively analyzes your pitch deck for structural weaknesses and unit economic flaws, grilling you with brutal edge-case questions.",
+      graphic: (
+        <div className="w-full aspect-square md:aspect-[4/3] bg-bg-card border border-border-subtle rounded-cards p-6 shadow-subtle-2 flex flex-col gap-4 justify-end relative overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-t from-bg-card via-bg-card/50 to-transparent z-10 pointer-events-none h-20 top-0" />
+          
+          <div className="flex gap-3 items-end self-start w-5/6 relative z-0 group-hover:-translate-y-1 transition-transform duration-500">
+            <div className="w-8 h-8 rounded-full bg-blush-peach shrink-0 flex items-center justify-center text-sienna-brown font-serif text-[10px] font-bold shadow-sm">VC</div>
+            <div className="bg-bg-primary p-4 rounded-2xl rounded-bl-sm border border-border-subtle w-full shadow-sm">
+              <div className="w-full h-2 bg-mist-gray rounded-full mb-2" />
+              <div className="w-full h-2 bg-mist-gray rounded-full mb-2" />
+              <div className="w-2/3 h-2 bg-mist-gray rounded-full" />
+            </div>
+          </div>
+          
+          <div className="flex gap-3 items-end self-end w-5/6 flex-row-reverse relative z-0 group-hover:-translate-y-1 transition-transform duration-500 delay-100">
+            <div className="w-8 h-8 rounded-full bg-ink-black shrink-0 flex items-center justify-center shadow-md">
+              <div className="w-3 h-3 bg-bg-primary rounded-[2px]" />
+            </div>
+            <div className="bg-ink-black p-4 rounded-2xl rounded-br-sm w-full shadow-md">
+              <div className="w-full h-2 bg-bg-primary/20 rounded-full mb-2" />
+              <div className="w-1/2 h-2 bg-bg-primary/20 rounded-full" />
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: "Elevator Pitch & Stage Scripting",
+      desc: "A communication coach that distills your startup thesis into multiple spoken formats. Outputs a snappy 30-second elevator pitch alongside a comprehensive 2-minute stage script complete with theatrical cues.",
+      graphic: (
+        <div className="w-full aspect-square md:aspect-[4/3] bg-bg-primary border border-border-subtle rounded-cards p-6 shadow-subtle-2 flex items-center justify-center relative overflow-hidden group">
+          <div className="absolute bottom-0 left-0 w-32 h-32 bg-mist-gray blur-[40px] rounded-full group-hover:scale-150 transition-transform duration-700" />
+          <div className="w-3/4 aspect-[3/4] bg-bg-card border border-border-subtle rounded-xl p-5 shadow-md group-hover:-rotate-2 transition-transform duration-500 relative z-10 flex flex-col gap-3">
+             <div className="w-1/2 h-3 bg-ink-black rounded-md mb-2" />
+             <div className="w-full h-2 bg-mist-gray rounded-sm" />
+             <div className="w-full h-2 bg-mist-gray rounded-sm" />
+             <div className="w-5/6 h-2 bg-mist-gray rounded-sm mb-2" />
+             <div className="w-1/3 h-2 bg-blush-peach rounded-sm mb-2" />
+             <div className="w-full h-2 bg-mist-gray rounded-sm" />
+             <div className="w-4/5 h-2 bg-mist-gray rounded-sm" />
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: "Investor Match & Outreach",
+      desc: "A targeting tool that matches your startup with ideal investor profiles based on your industry. It automatically drafts highly personalized, thesis-driven cold-outreach emails designed to capture attention.",
+      graphic: (
+        <div className="w-full aspect-square md:aspect-[4/3] bg-bg-card border border-border-subtle rounded-cards p-6 shadow-subtle-2 flex items-center justify-center relative overflow-hidden group">
+           <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blush-peach/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+           <div className="w-full max-w-[200px] bg-bg-primary border border-border-subtle rounded-xl p-4 shadow-md group-hover:translate-y-[-4px] transition-transform duration-500 relative z-10">
+              <div className="flex gap-2 items-center border-b border-border-subtle pb-3 mb-3">
+                <div className="w-8 h-8 rounded-full bg-mist-gray" />
+                <div className="flex flex-col gap-1">
+                  <div className="w-16 h-2 bg-ink-black rounded-sm" />
+                  <div className="w-10 h-1.5 bg-mist-gray rounded-sm" />
+                </div>
+              </div>
+              <div className="flex flex-col gap-2">
+                 <div className="w-full h-1.5 bg-mist-gray rounded-sm" />
+                 <div className="w-full h-1.5 bg-mist-gray rounded-sm" />
+                 <div className="w-2/3 h-1.5 bg-mist-gray rounded-sm" />
+              </div>
+              <div className="mt-4 w-20 h-6 bg-blush-peach rounded-md mx-auto" />
+           </div>
+        </div>
+      ),
+    },
+  ];
+
   return (
-    <section id="features" className="w-full py-32 bg-background relative">
-      <div className="absolute top-0 left-0 w-full h-px bg-white/10" />
-      <div className="max-w-7xl mx-auto px-6">
+    <section id="features" className="w-full py-24 bg-bg-secondary relative border-t border-border-subtle">
+      <div className="max-w-6xl mx-auto px-6 md:px-12">
         <motion.div
           initial="hidden"
           whileInView="visible"
@@ -386,107 +524,238 @@ function FeaturesSection() {
           variants={fadeUp}
           className="text-center mb-20"
         >
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">
+          <span className="text-sienna-brown font-semibold tracking-widest uppercase text-xs mb-3 block">The Arsenal</span>
+          <h2 className="font-serif text-[2.5rem] md:text-[3rem] text-text-primary mb-4 leading-tight">
             Built for Winners
           </h2>
-          <p className="text-xl text-[#CCCCFF]/60 max-w-2xl mx-auto">
+          <p className="font-sans text-[1.1rem] font-light text-text-secondary max-w-2xl mx-auto">
             Everything you need to confidently walk into your next partner
-            meeting.
+            meeting and dominate the conversation.
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <FeatureCard
-            icon={Zap}
-            title="AI Deck Generator"
-            desc="Enter a few details about your startup and let Gemini generate a full narrative instantly."
-            gradient="from-[#CCCCFF]/20 to-[#8a8aff]/20"
-            borderHover="hover:border-[#CCCCFF]/50"
-          />
-          <FeatureCard
-            icon={MessageSquare}
-            title="Pitch Q&A Coach"
-            desc="Prepare for investor pushback with an AI coach that knows your deck inside out."
-            gradient="from-[#CCCCFF]/10 to-[#8a8aff]/30"
-            borderHover="hover:border-[#CCCCFF]/50"
-          />
-          <FeatureCard
-            icon={Target}
-            title="Competitor Battlecard"
-            desc="Generate gamified battlecards pitting your startup's special abilities against incumbents."
-            gradient="from-[#CCCCFF]/30 to-white/10"
-            borderHover="hover:border-[#CCCCFF]/50"
-          />
-          <FeatureCard
-            icon={LineChart}
-            title="Cap Table Math"
-            desc="Simulate fundraising rounds and calculate founder dilution before you sign term sheets."
-            gradient="from-[#CCCCFF]/20 to-[#8a8aff]/20"
-            borderHover="hover:border-[#CCCCFF]/50"
-          />
-          <FeatureCard
-            icon={BrainCircuit}
-            title="Runway Calculator"
-            desc="Plan your burn rate, track revenue milestones, and visualize your startup's survival timeline."
-            gradient="from-[#CCCCFF]/10 to-[#8a8aff]/30"
-            borderHover="hover:border-[#CCCCFF]/50"
-          />
-          <FeatureCard
-            icon={Sparkles}
-            title="Investor Match"
-            desc="Find the perfect VC firms for your specific stage, industry, and funding requirements."
-            gradient="from-[#CCCCFF]/30 to-white/10"
-            borderHover="hover:border-[#CCCCFF]/50"
-          />
+        <div className="flex flex-col gap-24">
+          {features.map((feature, idx) => (
+            <FeatureRow 
+              key={idx}
+              title={feature.title}
+              desc={feature.desc}
+              graphic={feature.graphic}
+              isReversed={idx % 2 !== 0}
+            />
+          ))}
         </div>
       </div>
     </section>
   );
 }
 
-function FeatureCard({
-  icon: Icon,
+function FeatureRow({
   title,
   desc,
-  borderHover,
-  className = "",
-}: any) {
+  graphic,
+  isReversed,
+}: {
+  title: string;
+  desc: string;
+  graphic: React.ReactNode;
+  isReversed: boolean;
+}) {
   return (
     <motion.div
       initial="hidden"
       whileInView="visible"
-      viewport={{ once: true }}
+      viewport={{ once: true, margin: "-100px" }}
       variants={fadeUp}
-      className={`group relative p-8 rounded-3xl bg-[#0A0A0A] border border-white/5 transition-all duration-300 ${borderHover} overflow-hidden ${className}`}
+      className={`flex flex-col ${isReversed ? 'md:flex-row-reverse' : 'md:flex-row'} items-center gap-12 lg:gap-16`}
     >
-      <div className="relative z-10">
-        <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mb-6 border border-white/10 group-hover:scale-110 transition-transform">
-          <Icon className="w-6 h-6 text-white" />
-        </div>
-        <h3 className="text-2xl font-bold mb-3">{title}</h3>
-        <p className="text-[#CCCCFF]/60 leading-relaxed">{desc}</p>
+      <div className="flex-1 w-full relative">
+        {graphic}
+      </div>
+      <div className="flex-1 flex flex-col">
+        <h3 className="font-serif text-[1.5rem] md:text-[1.75rem] leading-tight text-text-primary mb-4">{title}</h3>
+        <p className="font-sans text-[0.95rem] text-text-secondary leading-relaxed font-light">{desc}</p>
       </div>
     </motion.div>
   );
 }
 
+function TestimonialsSection() {
+  const testimonials = [
+    {
+      quote: "I spent three weeks trying to build a deck that told the right story. PitchSoup generated a better narrative structure in 45 seconds.",
+      author: "Sarah J.",
+      role: "Founder, Fintech SaaS",
+    },
+    {
+      quote: "The Q&A Simulator is brutal in the best way possible. It asked me the exact same TAM questions that Andreessen Horowitz did the next day.",
+      author: "Michael T.",
+      role: "CEO, AI Infrastructure",
+    },
+    {
+      quote: "Finally, a tool that understands that the business logic matters more than pretty gradients. It actually helped me refine my GTM strategy.",
+      author: "Elena R.",
+      role: "Co-Founder, HealthTech",
+    },
+  ];
 
+  return (
+    <section className="w-full py-24 bg-bg-primary relative border-t border-border-subtle">
+      <div className="max-w-6xl mx-auto px-6 md:px-12">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeUp}
+          className="text-center mb-16"
+        >
+          <span className="text-sienna-brown font-semibold tracking-widest uppercase text-xs mb-3 block">Wall of Love</span>
+          <h2 className="font-serif text-[2rem] md:text-[2.5rem] text-text-primary mb-4 leading-tight">
+            Founders who cooked with us.
+          </h2>
+        </motion.div>
+
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={staggerContainer}
+          className="grid md:grid-cols-3 gap-6"
+        >
+          {testimonials.map((t, i) => (
+            <motion.div
+              key={i}
+              variants={fadeUp}
+              className="bg-bg-card p-8 rounded-cards border border-border-subtle flex flex-col justify-between hover:shadow-subtle-2 transition-shadow"
+            >
+              <div className="mb-6">
+                <div className="flex gap-1 mb-4">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <svg key={star} className="w-4 h-4 text-sienna-brown" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                  ))}
+                </div>
+                <p className="font-sans text-[0.95rem] text-text-secondary leading-relaxed italic">
+                  "{t.quote}"
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-mist-gray flex items-center justify-center font-bold text-text-tertiary">
+                  {t.author.charAt(0)}
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-sans font-semibold text-[14px] text-text-primary">{t.author}</span>
+                  <span className="font-sans text-[12px] text-text-tertiary">{t.role}</span>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+function PricingSection() {
+  return (
+    <section className="w-full py-24 bg-bg-secondary relative border-t border-border-subtle">
+      <div className="max-w-4xl mx-auto px-6 md:px-12">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeUp}
+          className="text-center mb-16"
+        >
+          <span className="text-sienna-brown font-semibold tracking-widest uppercase text-xs mb-3 block">Pricing</span>
+          <h2 className="font-serif text-[2rem] md:text-[2.5rem] text-text-primary mb-4 leading-tight">
+            Simple, founder-friendly pricing.
+          </h2>
+        </motion.div>
+
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeUp}
+          className="bg-bg-primary rounded-[32px] border border-border-subtle p-8 md:p-12 flex flex-col md:flex-row gap-8 items-center justify-between shadow-subtle-2"
+        >
+          <div className="flex flex-col">
+            <h3 className="font-sans text-[1.25rem] font-bold text-text-primary mb-2">Pro Kitchen Access</h3>
+            <p className="text-text-secondary mb-6 font-light">Everything you need to raise your seed round.</p>
+            <ul className="space-y-3">
+              {[
+                "Unlimited AI Pitch Generations",
+                "Unlimited Q&A Simulator Sessions",
+                "Financial Modeling & TAM Calculator",
+                "Export to PDF & PowerPoint",
+              ].map((item, i) => (
+                <li key={i} className="flex items-center text-text-primary text-[14px]">
+                  <Sparkles className="w-4 h-4 text-sienna-brown mr-3" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="flex flex-col items-center bg-bg-card p-8 rounded-2xl border border-border-subtle min-w-[250px]">
+            <span className="text-text-tertiary font-semibold uppercase tracking-wider text-[12px] mb-2">Lifetime Deal</span>
+            <div className="flex items-baseline gap-1 mb-6">
+              <span className="text-[2.5rem] font-serif text-text-primary leading-none">$49</span>
+              <span className="text-text-secondary text-[14px]">/once</span>
+            </div>
+            <Link
+              href="/sign-up"
+              className="w-full py-3 bg-ink-black text-paper-white text-center font-semibold rounded-buttons hover:bg-ink-black/90 transition-colors"
+            >
+              Get Access
+            </Link>
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+function FinalCTASection() {
+  return (
+    <section className="w-full py-32 bg-ink-black relative overflow-hidden">
+      <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] md:w-[40vw] md:h-[40vw] bg-sienna-brown/20 blur-[100px] rounded-full pointer-events-none" />
+      
+      <div className="max-w-4xl mx-auto px-6 text-center relative z-10 flex flex-col items-center">
+        <h2 className="font-serif text-[2.5rem] md:text-[3.5rem] text-paper-white mb-6 leading-tight tracking-tight">
+          Stop tweaking slides. <br className="hidden md:block"/> Start building.
+        </h2>
+        <p className="font-sans text-[1rem] md:text-[1.1rem] text-paper-white/70 mb-10 font-light max-w-xl mx-auto">
+          Join hundreds of founders who have cooked their winning decks with PitchSoup.
+        </p>
+        <Link
+          href="/sign-up"
+          className="px-8 py-4 bg-paper-white text-ink-black font-semibold font-sans text-[16px] rounded-buttons hover:scale-105 active:scale-95 transition-transform"
+        >
+          Start Cooking Now
+        </Link>
+      </div>
+    </section>
+  );
+}
 
 function Footer() {
   return (
-    <footer className="w-full bg-background py-12 border-t border-white/5">
-      <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between">
+    <footer className="w-full bg-bg-primary py-12 border-t border-border-subtle">
+      <div className="max-w-6xl mx-auto px-8 md:px-16 lg:px-24 flex flex-col md:flex-row items-center justify-between">
         <div className="flex items-center space-x-2 mb-4 md:mb-0">
           <Image
             src="/logo.png"
             alt="Logo"
             width={24}
             height={24}
-            className="rounded"
+            className="rounded-images"
           />
-          <span className="font-bold text-white">PitchSoup</span>
+          <span className="font-serif font-regular text-[18px] text-text-primary">PitchSoup</span>
         </div>
-        <p className="text-[#CCCCFF]/40 text-sm">
+        <p className="font-sans text-caption text-text-tertiary">
           © {new Date().getFullYear()} PitchSoup.
         </p>
       </div>
