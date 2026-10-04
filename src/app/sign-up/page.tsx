@@ -162,10 +162,6 @@ export default function RegisterPage() {
           
           {/* Left Column: Brand Story / Editorial */}
           <div className="lg:col-span-6 flex flex-col justify-center max-w-xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blush-peach/40 text-sienna-brown text-[12px] font-medium tracking-wide uppercase mb-6 w-max border border-sienna-brown/15">
-              <Sparkles className="w-3.5 h-3.5" />
-              Founder Membership
-            </div>
 
             <h1 className="font-serif text-[2.5rem] lg:text-[3.25rem] text-text-primary leading-[1.12] tracking-tight mb-4">
               Step into the <br />
@@ -176,27 +172,6 @@ export default function RegisterPage() {
               Join founders who turn raw ideas into institutional-grade pitch decks, validate defensibility, and simulate venture meetings with AI.
             </p>
 
-            {/* Testimonial Card */}
-            <div className="bg-blush-peach/30 border border-sienna-brown/15 rounded-cards p-6 text-sienna-brown relative overflow-hidden mb-6">
-              <p className="text-[14px] font-serif italic leading-relaxed mb-4">
-                "We stress-tested our TAM and GTM strategy and built a solid competitor battlecard the night before our Sequoia partner meeting. It flagged the exact questions the partners asked."
-              </p>
-              <div className="flex items-center justify-between text-[13px] font-sans">
-                <span className="font-medium text-sienna-brown">
-                  Elena Rostova
-                </span>
-                <span className="text-sienna-brown/70 text-[12px]">
-                  Co-founder @ HyperGrid
-                </span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-6 text-[13px] text-text-secondary font-medium">
-              <span className="flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-sienna-brown" />
-                Zero Hallucinations
-              </span>
-            </div>
           </div>
 
           {/* Right Column: Sign Up Card */}

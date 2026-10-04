@@ -17,7 +17,7 @@ export function SubmitButton() {
       {pending ? (
         <>
           <Loader2 className="w-4 h-4 animate-spin text-sienna-brown dark:text-blush-peach" />
-          <span>Cooking Deck... (this takes ~15 seconds)</span>
+          <span>Querying live market data & cooking deck... (~15s)</span>
         </>
       ) : (
         <>

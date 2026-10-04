@@ -31,14 +31,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(JSON.parse(pitch.deckData));
     }
 
-    // Call Gemini
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash', generationConfig: { responseMimeType: "application/json" } });
+    // Call Gemini with Google Search Grounding for live data
+    const model = genAI.getGenerativeModel({ 
+      model: 'gemini-2.5-flash', 
+      tools: [{ googleSearch: {} }],
+      generationConfig: { responseMimeType: "application/json" } 
+    });
     
     const prompt = `You are an expert Silicon Valley VC and pitch deck consultant.
 Given a startup idea, output a JSON object representing exactly 12 pitch deck slides.
 Return ONLY valid raw JSON without markdown formatting, code blocks, or triple backticks.
 
-IMPORTANT: Do not use placeholders like "Gemini generating breakdown...". You MUST generate realistic, thoughtful content, numbers, and actionable insights based on the provided inputs. If estimating a market size (TAM/SAM/SOM) or financial projections, provide actual estimated dollar amounts and demographics.
+IMPORTANT FOR LIVE DATA: You MUST use your Google Search tool to look up real-time, accurate market sizing data (US Census, Statista, World Bank, SEC filings) for this specific industry. Do not guess the TAM/SAM/SOM. Use real dollar amounts and cite the specific source/year in the speakerNotes for the market size slide.
 
 Input Idea:
 Startup Name: ${pitch.startupName}
