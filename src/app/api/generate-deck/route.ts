@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
     // Call Gemini with Google Search Grounding for live data
     const model = genAI.getGenerativeModel({ 
       model: 'gemini-2.5-flash', 
-      tools: [{ googleSearch: {} }],
+      tools: [{ googleSearchRetrieval: {} }],
       generationConfig: { responseMimeType: "application/json" } 
     });
     
