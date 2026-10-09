@@ -118,6 +118,58 @@ export default function CapTableClient() {
     exportAsCSV(rows, "cap-table");
   };
 
+  const renderDoughnut = () => {
+    let cumulativePercent = 0;
+    const segments: any[] = [];
+    const colors = ["#8B5A2B", "#10B981", "#6366F1", "#F59E0B"];
+    
+    const addSegment = (percent: number, color: string, label: string) => {
+      if (percent <= 0) return;
+      segments.push({ percent, cumulativePercent, color, label });
+      cumulativePercent += percent;
+    };
+
+    founders.forEach((f, i) => {
+      addSegment(((Number(f.initialEquity) || 0) * retentionMultiplier), colors[i % 4], f.name);
+    });
+    addSegment((numOptionPool * retentionMultiplier), "#9CA3AF", "Option Pool");
+    addSegment(investorEquity, "#059669", "Seed Investors");
+
+    return (
+      <div className="relative w-48 h-48 mx-auto my-6">
+        <svg viewBox="0 0 100 100" className="transform -rotate-90 w-full h-full drop-shadow-md">
+          <circle cx="50" cy="50" r="15.9155" fill="transparent" stroke="#f3f4f6" strokeWidth="31.831" className="dark:stroke-gray-800" />
+          {segments.map((seg, i) => {
+            const strokeDasharray = `${seg.percent} ${100 - seg.percent}`;
+            const strokeDashoffset = -seg.cumulativePercent;
+            return (
+              <circle
+                key={i}
+                cx="50"
+                cy="50"
+                r="15.9155"
+                fill="transparent"
+                stroke={seg.color}
+                strokeWidth="31.831"
+                strokeDasharray={strokeDasharray}
+                strokeDashoffset={strokeDashoffset}
+                className="transition-all duration-1000 ease-in-out hover:opacity-90 cursor-pointer"
+              >
+                <title>{seg.label}: {seg.percent.toFixed(1)}%</title>
+              </circle>
+            );
+          })}
+          {/* Inner cutout to make it a donut */}
+          <circle cx="50" cy="50" r="12" fill="currentColor" className="text-bg-floating" />
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+            <span className="text-[9px] uppercase tracking-widest text-text-muted font-semibold">Post-Money</span>
+            <span className="text-sm font-mono font-bold text-text-primary">{formatCurrency(postMoney)}</span>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-6">
       {!isBalanced && (
@@ -346,6 +398,9 @@ export default function CapTableClient() {
                 </span>
               </div>
             </div>
+
+            {/* Visualizer */}
+            {renderDoughnut()}
 
             {/* Shareholder Breakdown Table */}
             <div className="space-y-2 text-xs">
