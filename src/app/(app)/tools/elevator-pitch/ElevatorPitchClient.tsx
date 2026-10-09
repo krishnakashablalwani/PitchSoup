@@ -28,6 +28,7 @@ type Pitch = {
   businessModel?: string;
   traction?: string;
   fundraisingAsk?: string;
+  deckData?: any;
 };
 
 type PitchScripts = {

@@ -10,6 +10,7 @@ export async function generateElevatorPitch(pitch: {
   businessModel?: string;
   traction?: string;
   fundraisingAsk?: string;
+  deckData?: any;
 }) {
   try {
     if (!process.env.GEMINI_API_KEY) {
@@ -29,6 +30,9 @@ Generate a comprehensive set of verbal pitch scripts for this startup:
 - Business Model: ${pitch.businessModel || "B2B / SaaS"}
 - Traction: ${pitch.traction || "Early customer validation"}
 - Ask: ${pitch.fundraisingAsk || "Raising seed funding"}
+
+Here is the exact pitch deck they created (use this for deeper context, facts, and figures):
+${typeof pitch.deckData === 'string' ? pitch.deckData : JSON.stringify(pitch.deckData || {})}
 
 Craft 4 verbal delivery scripts tailored for different real-world situations:
 1. "cocktailHook" (~10 seconds / 1-2 punchy sentences): The conversational hook when someone asks "What are you working on?" at a mixer. Zero buzzwords, clear metaphor.
