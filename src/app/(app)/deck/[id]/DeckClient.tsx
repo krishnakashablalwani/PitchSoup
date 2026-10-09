@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { deletePitch, updatePitch, updatePitchDeckData } from "@/app/actions/pitchCrud";
-import { analyzeConsistency } from "@/app/actions/radar";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronLeft,
@@ -30,10 +29,7 @@ import {
   Globe,
   History,
   GitCommit,
-  Activity,
-  X,
-  ShieldAlert,
-  Loader2
+  X
 } from "lucide-react";
 import { SlideVisual } from "@/components/deck/SlideVisual";
 import { toast } from "react-hot-toast";
@@ -68,11 +64,6 @@ export default function DeckClient({
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
   
-  const [showRadarPanel, setShowRadarPanel] = useState(false);
-  const [radarLoading, setRadarLoading] = useState(false);
-  const [radarResult, setRadarResult] = useState<any>(null);
-  const [previousRadarScore, setPreviousRadarScore] = useState<number | null>(null);
-
   const router = useRouter();
 
   const [editForm, setEditForm] = useState({
@@ -323,33 +314,6 @@ export default function DeckClient({
     }
     setIsExportingPDF(false);
   };
-
-  const handleRunRadar = async () => {
-    setRadarLoading(true);
-    setShowRadarPanel(true);
-    
-    // Store previous score before running
-    if (radarResult?.score !== undefined) {
-      setPreviousRadarScore(radarResult.score);
-    }
-    
-    try {
-      const res = await analyzeConsistency({
-        ...pitch,
-        deckData: slides
-      });
-      if (res) {
-        setRadarResult(res);
-        toast.success("Consistency scan complete!");
-      } else {
-        toast.error("Radar analysis failed.");
-      }
-    } catch (e) {
-      toast.error("Failed to run Radar");
-    }
-    setRadarLoading(false);
-  };
-
   return (
     <div className={`flex-1 flex flex-col h-screen bg-bg-primary text-text-primary overflow-hidden transition-all duration-300 ease-in-out ${isExiting ? "opacity-0 scale-[0.98]" : "opacity-100 scale-100"}`}>
       {/* Editorial Top Bar */}
@@ -438,23 +402,6 @@ export default function DeckClient({
           >
             <Layers className="w-3.5 h-3.5" />
             <span className="hidden md:inline">Slides</span>
-          </button>
-
-          {/* Radar Toggle */}
-          <button
-            onClick={() => {
-              if (!showRadarPanel && !radarResult) handleRunRadar();
-              else setShowRadarPanel(!showRadarPanel);
-            }}
-            className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 ${
-              showRadarPanel
-                ? "bg-rose-500/10 text-rose-600 border border-rose-500/20"
-                : "text-text-secondary hover:bg-bg-secondary hover:text-text-primary"
-            }`}
-            title="Pitch Consistency Radar"
-          >
-            <Activity className="w-3.5 h-3.5" />
-            <span className="hidden md:inline">Radar</span>
           </button>
 
           {/* Speaker Notes Toggle */}
@@ -706,153 +653,6 @@ export default function DeckClient({
             </div>
           </div>
         </main>
-
-        {/* Right Drawer: Consistency Radar */}
-        <AnimatePresence initial={false}>
-          {showRadarPanel && (
-            <motion.aside
-              initial={{ width: 0, opacity: 0 }}
-              animate={{ width: 320, opacity: 1 }}
-              exit={{ width: 0, opacity: 0 }}
-              transition={{ duration: 0.2, ease: "easeInOut" }}
-              className="h-full border-l border-border-subtle bg-bg-secondary/70 flex flex-col shrink-0 overflow-hidden z-20 shadow-[-4px_0_24px_rgba(0,0,0,0.02)]"
-            >
-              <div className="p-4 border-b border-border-subtle flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Activity className="w-4 h-4 text-rose-500" />
-                  <span className="text-sm font-semibold text-text-primary font-serif">
-                    Consistency Radar
-                  </span>
-                </div>
-                <button
-                  onClick={() => setShowRadarPanel(false)}
-                  className="p-1 hover:bg-bg-floating rounded-md text-text-muted hover:text-text-primary"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              <div className="flex-1 overflow-y-auto p-4 no-scrollbar">
-                {radarLoading ? (
-                  <div className="h-full flex flex-col items-center justify-center text-center space-y-3 opacity-70">
-                    <Loader2 className="w-6 h-6 animate-spin text-rose-500" />
-                    <p className="text-xs text-text-secondary">Scanning slides for logical contradictions, missing facts, and unrealistic projections...</p>
-                  </div>
-                ) : radarResult ? (
-                  <div className="space-y-6">
-                    <div className="text-center space-y-1">
-                      <div className="text-[10px] font-mono uppercase tracking-widest text-text-muted font-semibold">
-                        Overall Realism Score
-                      </div>
-                      <div className="flex items-center justify-center gap-3">
-                        <div className={`text-4xl font-serif font-medium ${radarResult.score >= 80 ? "text-emerald-500" : radarResult.score >= 60 ? "text-amber-500" : "text-rose-500"}`}>
-                          {radarResult.score}/100
-                        </div>
-                        {previousRadarScore !== null && radarResult.score > previousRadarScore && (
-                          <div className="bg-emerald-500/10 text-emerald-600 px-2 py-1 rounded-md text-xs font-bold border border-emerald-500/20">
-                            +{radarResult.score - previousRadarScore} pts!
-                          </div>
-                        )}
-                        {previousRadarScore !== null && radarResult.score < previousRadarScore && (
-                          <div className="bg-rose-500/10 text-rose-600 px-2 py-1 rounded-md text-xs font-bold border border-rose-500/20">
-                            {radarResult.score - previousRadarScore} pts
-                          </div>
-                        )}
-                      </div>
-                      <p className="text-xs text-text-secondary mt-2 leading-relaxed bg-bg-floating p-3 rounded-xl border border-border-subtle">
-                        {radarResult.summary}
-                      </p>
-                    </div>
-
-                    <div className="space-y-3">
-                      <h4 className="text-[10px] font-mono uppercase tracking-widest text-text-secondary font-semibold">
-                        Detected Issues
-                      </h4>
-                      {radarResult.issues?.map((issue: any) => (
-                        <div key={issue.id} className="bg-bg-floating border border-rose-500/20 p-3 rounded-xl shadow-xs relative overflow-hidden">
-                          <div className={`absolute top-0 left-0 w-1 h-full ${issue.severity === 'high' ? 'bg-rose-500' : issue.severity === 'medium' ? 'bg-amber-500' : 'bg-blue-500'}`} />
-                          <div className="pl-2 space-y-2">
-                            <div className="flex items-start justify-between gap-2">
-                              <h5 className="text-xs font-semibold text-text-primary">{issue.title}</h5>
-                              <span className="text-[9px] font-mono bg-bg-secondary px-1.5 py-0.5 rounded text-text-muted shrink-0">
-                                {issue.slideRef}
-                              </span>
-                            </div>
-                            <p className="text-[11px] text-text-secondary leading-relaxed">
-                              {issue.description}
-                            </p>
-                            <div className="pt-2 border-t border-border-subtle/50">
-                              <span className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400 block mb-0.5">Suggested Fix:</span>
-                              <p className="text-[11px] text-text-primary">
-                                {issue.suggestedFix}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                       {radarResult.issues?.length === 0 && (
-                          <div className="text-center p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
-                            <Check className="w-5 h-5 text-emerald-500 mx-auto mb-1" />
-                            <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">No major inconsistencies found!</p>
-                          </div>
-                       )}
-                     </div>
-                     
-                     <div className="space-y-3">
-                       <h4 className="text-[10px] font-mono uppercase tracking-widest text-text-secondary font-semibold">
-                         Logic Stress Tests
-                       </h4>
-                       {radarResult.stressTests?.map((test: any) => (
-                         <div key={test.id} className="bg-bg-floating border border-amber-500/20 p-3 rounded-xl shadow-xs relative overflow-hidden">
-                           <div className={`absolute top-0 left-0 w-1 h-full ${test.severity === 'high' ? 'bg-rose-500' : test.severity === 'medium' ? 'bg-amber-500' : 'bg-blue-500'}`} />
-                           <div className="pl-2 space-y-2">
-                             <div className="flex items-start justify-between gap-2">
-                               <h5 className="text-[11px] font-semibold text-text-primary">Weak Assumption: {test.assumption}</h5>
-                             </div>
-                             <p className="text-[11px] text-text-secondary leading-relaxed">
-                               <b>Business Impact:</b> {test.businessImpact}
-                             </p>
-                             <p className="text-[11px] text-text-secondary leading-relaxed">
-                               <b>Investor Concern:</b> {test.investorConcern}
-                             </p>
-                             <div className="pt-2 border-t border-border-subtle/50">
-                               <span className="text-[10px] font-medium text-amber-600 dark:text-amber-400 block mb-0.5">Recommended Correction:</span>
-                               <p className="text-[11px] text-text-primary">
-                                 {test.recommendedCorrection}
-                               </p>
-                             </div>
-                           </div>
-                         </div>
-                       ))}
-                       {(!radarResult.stressTests || radarResult.stressTests.length === 0) && (
-                          <div className="text-center p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
-                            <Check className="w-5 h-5 text-emerald-500 mx-auto mb-1" />
-                            <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">No weak assumptions found!</p>
-                          </div>
-                       )}
-                     </div>
-
-                     <button
-                      onClick={handleRunRadar}
-                      className="w-full py-2 bg-bg-floating border border-border-subtle rounded-lg text-xs font-medium hover:bg-bg-secondary transition-colors"
-                    >
-                      Re-scan Deck
-                    </button>
-                  </div>
-                ) : (
-                  <div className="h-full flex flex-col items-center justify-center text-center space-y-4">
-                    <ShieldAlert className="w-8 h-8 text-text-muted opacity-50" />
-                    <p className="text-xs text-text-secondary">Run the Consistency Radar to detect contradictions between your business model, traction, and financial projections.</p>
-                    <button onClick={handleRunRadar} className="px-4 py-2 bg-ink-black text-paper-white rounded-lg text-xs font-medium shadow-sm">
-                      Run Scan Now
-                    </button>
-                  </div>
-                )}
-              </div>
-            </motion.aside>
-          )}
-        </AnimatePresence>
-
 
         {/* Right Drawer: Toggleable Speaker Notes */}
         <AnimatePresence initial={false}>
