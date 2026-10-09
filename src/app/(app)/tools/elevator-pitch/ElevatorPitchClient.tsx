@@ -113,8 +113,21 @@ export default function ElevatorPitchClient({ pitches }: { pitches: Pitch[] }) {
 
     const textToSpeak = getActiveText().replace(/\[.*?\]/g, "");
     const utterance = new SpeechSynthesisUtterance(textToSpeak);
-    utterance.rate = 1.0;
-    utterance.pitch = 1.0;
+    
+    const voices = window.speechSynthesis.getVoices();
+    const preferredVoice = voices.find(
+      (v) =>
+        v.name.includes("Online (Natural)") || 
+        v.name.includes("Google UK English") || 
+        v.name.includes("Daniel") || 
+        v.name.includes("Karen") || 
+        v.name.includes("Serena")
+    ) || voices.find(v => v.lang.startsWith('en-GB') || v.lang.startsWith('en-AU'));
+    
+    if (preferredVoice) utterance.voice = preferredVoice;
+
+    utterance.rate = 0.95; // Slower for better emphasis
+    utterance.pitch = 1.05; // Slightly higher for more energy/emotion
 
     utterance.onend = () => setIsSpeaking(false);
     utterance.onerror = () => setIsSpeaking(false);

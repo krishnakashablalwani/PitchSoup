@@ -17,6 +17,14 @@ import {
   MessageSquare,
   Zap,
   Target,
+  Flame,
+  Play,
+  Mic,
+  Maximize,
+  Volume2,
+  Mail,
+  Send,
+  CheckCircle,
 } from "lucide-react";
 import { useAuth, UserButton } from "@clerk/nextjs";
 
@@ -393,26 +401,43 @@ function FeaturesSection() {
       title: "AI Pitch Deck Generation",
       desc: "Transforms raw startup ideas into full 12-slide pitch decks in seconds. It writes the investment narrative, estimates TAM/SAM/SOM market demographics, generates speaker notes, and intelligently curates beautiful layouts.",
       graphic: (
-        <div className="w-full aspect-square md:aspect-[4/3] bg-bg-primary border border-border-subtle rounded-cards p-6 shadow-subtle-2 flex flex-col gap-4 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-blush-peach blur-[40px] rounded-full group-hover:scale-150 transition-transform duration-700" />
+        <div className="w-full aspect-square md:aspect-[4/3] bg-bg-primary border border-border-subtle rounded-cards p-6 shadow-subtle-2 flex flex-col items-center justify-center relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-blush-peach/40 blur-[50px] rounded-full group-hover:scale-150 transition-transform duration-700" />
           
-          <div className="w-full flex justify-between items-center bg-bg-card p-3 rounded-lg border border-border-subtle relative z-10">
-            <div className="flex gap-1.5">
-              <div className="w-2.5 h-2.5 rounded-full bg-border-subtle" />
-              <div className="w-2.5 h-2.5 rounded-full bg-border-subtle" />
-            </div>
-            <div className="w-16 h-3 bg-mist-gray rounded-full" />
-          </div>
-          
-          <div className="grid grid-cols-2 gap-4 flex-1 relative z-10">
-            <div className="bg-bg-card rounded-xl border border-border-subtle p-3 flex flex-col gap-3 shadow-sm group-hover:-translate-y-1 transition-transform duration-500">
-              <div className="w-1/2 h-2 bg-mist-gray rounded-full" />
-              <div className="w-full flex-1 bg-mist-gray/50 rounded-lg" />
-            </div>
-            <div className="bg-bg-card rounded-xl border border-border-subtle p-3 flex flex-col gap-3 shadow-sm group-hover:translate-y-1 transition-transform duration-500 delay-100">
-              <div className="w-1/2 h-2 bg-mist-gray rounded-full" />
-              <div className="w-full flex-1 bg-blush-peach rounded-lg" />
-            </div>
+          <div className="relative z-10 flex flex-col items-center">
+            <motion.div 
+              animate={{ y: [-5, 5, -5] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              className="relative w-48 h-32 bg-bg-card border border-border-subtle rounded-xl shadow-lg p-4 flex flex-col gap-2 z-30"
+            >
+              <div className="w-1/2 h-3 bg-sienna-brown/80 rounded-full mb-2" />
+              <div className="w-full h-2 bg-mist-gray rounded-full" />
+              <div className="w-5/6 h-2 bg-mist-gray rounded-full" />
+              <div className="flex gap-2 mt-auto">
+                <div className="w-1/3 h-10 bg-blush-peach/50 rounded-lg" />
+                <div className="w-2/3 h-10 bg-mist-gray/30 rounded-lg" />
+              </div>
+            </motion.div>
+
+            <motion.div 
+              animate={{ y: [-5, 5, -5], scale: [0.95, 0.95, 0.95] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0.2 }}
+              className="absolute top-4 w-44 h-32 bg-bg-card border border-border-subtle rounded-xl shadow-md p-4 z-20 opacity-60"
+            />
+            
+            <motion.div 
+              animate={{ y: [-5, 5, -5], scale: [0.9, 0.9, 0.9] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0.4 }}
+              className="absolute top-8 w-40 h-32 bg-bg-card border border-border-subtle rounded-xl shadow-sm p-4 z-10 opacity-30"
+            />
+            
+            <motion.div 
+              animate={{ rotate: 360 }}
+              transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+              className="absolute -right-4 -top-4 w-12 h-12 bg-blush-peach text-sienna-brown rounded-full flex items-center justify-center shadow-lg z-40"
+            >
+              <Sparkles className="w-6 h-6" />
+            </motion.div>
           </div>
         </div>
       ),
@@ -422,19 +447,62 @@ function FeaturesSection() {
       desc: "A premium presentation interface for your generated pitches. Features include responsive visual scaling, seamless keyboard navigation, automated AI voiceovers, PDF exporting, and instant public link sharing.",
       graphic: (
         <div className="w-full aspect-square md:aspect-[4/3] bg-bg-card border border-border-subtle rounded-cards overflow-hidden shadow-subtle-2 flex flex-col group relative">
-          <div className="absolute bottom-[-20%] left-[-20%] w-48 h-48 bg-mist-gray blur-[50px] rounded-full group-hover:bg-blush-peach/40 transition-colors duration-1000" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] h-[150%] bg-[conic-gradient(from_90deg_at_50%_50%,#00000000_50%,#a0522d1a_100%)] animate-spin-slow pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
           
-          <div className="h-10 border-b border-border-subtle flex items-center px-4 space-x-1.5 bg-bg-primary relative z-10">
-            <div className="w-2.5 h-2.5 rounded-full bg-border-subtle" />
-            <div className="w-2.5 h-2.5 rounded-full bg-border-subtle" />
-            <div className="w-2.5 h-2.5 rounded-full bg-border-subtle" />
-            <div className="ml-3 w-32 h-4 bg-bg-card rounded border border-border-subtle mx-auto" />
+          <div className="h-10 border-b border-border-subtle flex items-center px-4 space-x-2 bg-bg-primary relative z-10 shrink-0">
+            <div className="w-3 h-3 rounded-full bg-rose-400" />
+            <div className="w-3 h-3 rounded-full bg-amber-400" />
+            <div className="w-3 h-3 rounded-full bg-emerald-400" />
+            <div className="ml-4 flex-1 h-5 bg-bg-card rounded-md border border-border-subtle flex items-center px-2 justify-center overflow-hidden">
+              <span className="text-[10px] text-text-tertiary truncate">xyz.com</span>
+            </div>
           </div>
           
-          <div className="p-6 flex flex-col items-center justify-center flex-1 relative z-10">
-            <div className="w-full aspect-video bg-bg-primary rounded-lg border border-border-subtle shadow-sm flex flex-col justify-center items-center p-4">
-               <div className="w-2/3 h-4 bg-ink-black rounded-md mb-4" />
-               <div className="w-1/3 h-2 bg-mist-gray rounded-md" />
+          <div className="flex-1 flex bg-bg-primary relative z-10 overflow-hidden">
+            {/* Sidebar with slides */}
+            <div className="hidden md:flex w-20 border-r border-border-subtle flex-col items-center py-4 gap-3 bg-bg-card/50 shrink-0">
+              <div className="w-12 aspect-[4/3] rounded border-2 border-sienna-brown bg-bg-primary shadow-sm" />
+              <div className="w-12 aspect-[4/3] rounded border border-border-subtle bg-bg-primary/50 opacity-50" />
+              <div className="w-12 aspect-[4/3] rounded border border-border-subtle bg-bg-primary/50 opacity-50" />
+            </div>
+            
+            {/* Main Stage */}
+            <div className="flex-1 p-4 flex flex-col items-center justify-center relative">
+              <motion.div 
+                whileHover={{ scale: 1.02 }}
+                className="w-full max-w-sm aspect-video bg-bg-card rounded-xl border border-border-subtle shadow-lg flex flex-col overflow-hidden relative group/slide"
+              >
+                {/* Slide content */}
+                <div className="flex-1 p-5 flex flex-col items-center justify-center relative z-0">
+                  <div className="absolute inset-0 bg-gradient-to-br from-blush-peach/20 to-transparent" />
+                  <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-sienna-brown/10 flex items-center justify-center mb-3">
+                    <LineChart className="w-6 h-6 md:w-8 md:h-8 text-sienna-brown" />
+                  </div>
+                  <h4 className="font-serif text-base md:text-lg text-text-primary font-bold mb-2 text-center">Market Traction</h4>
+                  <div className="flex gap-2 items-end h-16 md:h-24">
+                    <div className="w-6 md:w-8 h-[40%] bg-mist-gray rounded-sm" />
+                    <div className="w-6 md:w-8 h-[70%] bg-blush-peach rounded-sm" />
+                    <div className="w-6 md:w-8 h-[100%] bg-sienna-brown rounded-sm shadow-md" />
+                  </div>
+                </div>
+                
+                {/* Overlay controls */}
+                <div className="absolute bottom-0 left-0 w-full h-12 bg-ink-black/80 backdrop-blur-md translate-y-full group-hover/slide:translate-y-0 transition-transform duration-300 flex items-center px-4 justify-between">
+                  <Play className="w-4 h-4 text-white" />
+                  <div className="flex-1 mx-4 h-1 bg-white/20 rounded-full relative">
+                    <motion.div 
+                      initial={{ width: "0%" }}
+                      animate={{ width: "100%" }}
+                      transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+                      className="absolute top-0 left-0 h-full bg-sienna-brown rounded-full"
+                    />
+                  </div>
+                  <div className="flex items-center gap-3 text-white">
+                    <Volume2 className="w-4 h-4" />
+                    <Maximize className="w-4 h-4 hidden sm:block" />
+                  </div>
+                </div>
+              </motion.div>
             </div>
           </div>
         </div>
@@ -444,26 +512,42 @@ function FeaturesSection() {
       title: "VC Stress Test Simulator",
       desc: "An AI-driven interrogation tool that acts like a skeptical venture capitalist. It actively analyzes your pitch deck for structural weaknesses and unit economic flaws, grilling you with brutal edge-case questions.",
       graphic: (
-        <div className="w-full aspect-square md:aspect-[4/3] bg-bg-card border border-border-subtle rounded-cards p-6 shadow-subtle-2 flex flex-col gap-4 justify-end relative overflow-hidden group">
+        <div className="w-full aspect-square md:aspect-[4/3] bg-bg-card border border-border-subtle rounded-cards p-6 shadow-subtle-2 flex flex-col justify-center relative overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-t from-bg-card via-bg-card/50 to-transparent z-10 pointer-events-none h-20 top-0" />
+          <div className="absolute top-10 right-10 w-32 h-32 bg-rose-500/10 blur-[40px] rounded-full group-hover:bg-rose-500/20 transition-colors duration-1000" />
           
-          <div className="flex gap-3 items-end self-start w-5/6 relative z-0 group-hover:-translate-y-1 transition-transform duration-500">
-            <div className="w-8 h-8 rounded-full bg-blush-peach shrink-0 flex items-center justify-center text-sienna-brown font-serif text-[10px] font-bold shadow-sm">VC</div>
-            <div className="bg-bg-primary p-4 rounded-2xl rounded-bl-sm border border-border-subtle w-full shadow-sm">
-              <div className="w-full h-2 bg-mist-gray rounded-full mb-2" />
-              <div className="w-full h-2 bg-mist-gray rounded-full mb-2" />
-              <div className="w-2/3 h-2 bg-mist-gray rounded-full" />
-            </div>
-          </div>
-          
-          <div className="flex gap-3 items-end self-end w-5/6 flex-row-reverse relative z-0 group-hover:-translate-y-1 transition-transform duration-500 delay-100">
-            <div className="w-8 h-8 rounded-full bg-ink-black shrink-0 flex items-center justify-center shadow-md">
-              <div className="w-3 h-3 bg-bg-primary rounded-[2px]" />
-            </div>
-            <div className="bg-ink-black p-4 rounded-2xl rounded-br-sm w-full shadow-md">
-              <div className="w-full h-2 bg-bg-primary/20 rounded-full mb-2" />
-              <div className="w-1/2 h-2 bg-bg-primary/20 rounded-full" />
-            </div>
+          <div className="space-y-4 relative z-20 w-full">
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              className="flex gap-3 items-end self-start w-[85%]"
+            >
+              <div className="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center text-rose-600 shadow-sm shrink-0 border border-rose-200">
+                <Flame className="w-5 h-5" />
+              </div>
+              <div className="bg-white p-4 rounded-2xl rounded-bl-sm border border-rose-100 shadow-sm w-full relative">
+                <div className="absolute -left-2 top-4 w-0 h-0 border-t-[8px] border-t-transparent border-r-[10px] border-r-white border-b-[8px] border-b-transparent" />
+                <div className="w-3/4 h-2.5 bg-rose-900/20 rounded-full mb-3" />
+                <div className="w-full h-2 bg-rose-900/10 rounded-full mb-2" />
+                <div className="w-5/6 h-2 bg-rose-900/10 rounded-full" />
+              </div>
+            </motion.div>
+            
+            <motion.div 
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3 }}
+              className="flex gap-3 items-end w-[85%] ml-auto flex-row-reverse"
+            >
+              <div className="w-10 h-10 rounded-full bg-ink-black flex items-center justify-center text-white shadow-md shrink-0">
+                <div className="w-5 h-5 bg-white/20 rounded-full absolute" />
+              </div>
+              <div className="bg-ink-black p-4 rounded-2xl rounded-br-sm shadow-md w-full relative">
+                <div className="absolute -right-2 top-4 w-0 h-0 border-t-[8px] border-t-transparent border-l-[10px] border-l-ink-black border-b-[8px] border-b-transparent" />
+                <div className="w-full h-2 bg-white/20 rounded-full mb-2" />
+                <div className="w-2/3 h-2 bg-white/20 rounded-full" />
+              </div>
+            </motion.div>
           </div>
         </div>
       ),
@@ -473,15 +557,52 @@ function FeaturesSection() {
       desc: "A communication coach that distills your startup thesis into multiple spoken formats. Outputs a snappy 30-second elevator pitch alongside a comprehensive 2-minute stage script complete with theatrical cues.",
       graphic: (
         <div className="w-full aspect-square md:aspect-[4/3] bg-bg-primary border border-border-subtle rounded-cards p-6 shadow-subtle-2 flex items-center justify-center relative overflow-hidden group">
-          <div className="absolute bottom-0 left-0 w-32 h-32 bg-mist-gray blur-[40px] rounded-full group-hover:scale-150 transition-transform duration-700" />
-          <div className="w-3/4 aspect-[3/4] bg-bg-card border border-border-subtle rounded-xl p-5 shadow-md group-hover:-rotate-2 transition-transform duration-500 relative z-10 flex flex-col gap-3">
-             <div className="w-1/2 h-3 bg-ink-black rounded-md mb-2" />
-             <div className="w-full h-2 bg-mist-gray rounded-sm" />
-             <div className="w-full h-2 bg-mist-gray rounded-sm" />
-             <div className="w-5/6 h-2 bg-mist-gray rounded-sm mb-2" />
-             <div className="w-1/3 h-2 bg-blush-peach rounded-sm mb-2" />
-             <div className="w-full h-2 bg-mist-gray rounded-sm" />
-             <div className="w-4/5 h-2 bg-mist-gray rounded-sm" />
+          {/* Animated Background Audio Waves */}
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none">
+            <motion.div animate={{ scale: [1, 2, 1], opacity: [0.5, 0, 0.5] }} transition={{ duration: 2, repeat: Infinity }} className="absolute w-32 h-32 border border-sienna-brown/30 rounded-full" />
+            <motion.div animate={{ scale: [1, 2.5, 1], opacity: [0.3, 0, 0.3] }} transition={{ duration: 2.5, repeat: Infinity }} className="absolute w-40 h-40 border border-sienna-brown/20 rounded-full" />
+          </div>
+          
+          <div className="w-full max-w-sm bg-bg-card border border-border-subtle rounded-xl shadow-xl flex flex-col overflow-hidden relative z-10 group-hover:scale-105 transition-transform duration-500">
+            {/* Header */}
+            <div className="bg-ink-black px-4 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                <span className="text-xs font-medium text-white tracking-wider">00:30 STAGE SCRIPT</span>
+              </div>
+              <Mic className="w-4 h-4 text-white/70" />
+            </div>
+            
+            {/* Teleprompter Content */}
+            <div className="p-5 flex flex-col gap-4 bg-bg-card">
+              <div className="border-l-2 border-sienna-brown pl-3">
+                <span className="text-[10px] text-sienna-brown font-bold tracking-widest uppercase mb-1 block">[ Walk to Center Stage ]</span>
+                <div className="space-y-2">
+                  <motion.div initial={{ opacity: 0.3 }} whileInView={{ opacity: 1 }} className="h-2.5 w-full bg-text-primary rounded-full" />
+                  <motion.div initial={{ opacity: 0.3 }} whileInView={{ opacity: 1 }} transition={{ delay: 0.2 }} className="h-2.5 w-5/6 bg-text-primary rounded-full" />
+                </div>
+              </div>
+              
+              <div className="border-l-2 border-mist-gray pl-3">
+                <span className="text-[10px] text-text-tertiary font-bold tracking-widest uppercase mb-1 block">[ Pause for Effect ]</span>
+                <div className="space-y-2">
+                  <motion.div initial={{ opacity: 0.3 }} whileInView={{ opacity: 1 }} transition={{ delay: 0.4 }} className="h-2.5 w-11/12 bg-text-secondary rounded-full" />
+                  <motion.div initial={{ opacity: 0.3 }} whileInView={{ opacity: 1 }} transition={{ delay: 0.6 }} className="h-2.5 w-2/3 bg-text-secondary rounded-full" />
+                </div>
+              </div>
+            </div>
+            
+            {/* Visualizer Footer */}
+            <div className="bg-bg-primary border-t border-border-subtle p-3 flex items-center justify-center gap-1 h-12 overflow-hidden">
+              {[...Array(24)].map((_, i) => (
+                <motion.div
+                  key={i}
+                  animate={{ height: [8, Math.random() * 24 + 4, 8] }}
+                  transition={{ duration: 0.5 + Math.random() * 0.5, repeat: Infinity, repeatType: "mirror" }}
+                  className="w-1 bg-sienna-brown rounded-full"
+                />
+              ))}
+            </div>
           </div>
         </div>
       ),
@@ -490,23 +611,78 @@ function FeaturesSection() {
       title: "Investor Match & Outreach",
       desc: "A targeting tool that matches your startup with ideal investor profiles based on your industry. It automatically drafts highly personalized, thesis-driven cold-outreach emails designed to capture attention.",
       graphic: (
-        <div className="w-full aspect-square md:aspect-[4/3] bg-bg-card border border-border-subtle rounded-cards p-6 shadow-subtle-2 flex items-center justify-center relative overflow-hidden group">
-           <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blush-peach/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
-           <div className="w-full max-w-[200px] bg-bg-primary border border-border-subtle rounded-xl p-4 shadow-md group-hover:translate-y-[-4px] transition-transform duration-500 relative z-10">
-              <div className="flex gap-2 items-center border-b border-border-subtle pb-3 mb-3">
-                <div className="w-8 h-8 rounded-full bg-mist-gray" />
-                <div className="flex flex-col gap-1">
-                  <div className="w-16 h-2 bg-ink-black rounded-sm" />
-                  <div className="w-10 h-1.5 bg-mist-gray rounded-sm" />
+        <div className="w-full aspect-square md:aspect-[4/3] bg-bg-primary border border-border-subtle rounded-cards p-6 shadow-subtle-2 flex items-center justify-center relative overflow-hidden group">
+          <div className="absolute top-0 left-0 w-32 h-32 bg-emerald-500/10 blur-[40px] rounded-full group-hover:bg-emerald-500/20 transition-colors duration-1000" />
+          
+          <div className="w-full max-w-md h-56 bg-bg-card border border-border-subtle rounded-xl shadow-lg flex overflow-hidden relative z-10 group-hover:scale-105 transition-transform duration-500">
+            {/* Left: Investor List */}
+            <div className="w-[38%] border-r border-border-subtle bg-bg-primary p-3 flex flex-col gap-2 relative">
+              <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-bg-primary to-transparent z-10" />
+              
+              {[
+                { match: "98%", name: "Sequoia", active: true },
+                { match: "92%", name: "a16z", active: false },
+                { match: "87%", name: "Lightspeed", active: false },
+                { match: "81%", name: "Founders", active: false },
+              ].map((investor, i) => (
+                <div key={i} className={`p-2 rounded-lg border flex flex-col gap-1.5 ${investor.active ? 'bg-bg-card border-sienna-brown shadow-sm' : 'bg-transparent border-transparent opacity-60'}`}>
+                  <div className="flex justify-between items-center">
+                    <div className="w-14 h-2.5 bg-ink-black rounded-sm" />
+                    <span className="text-[9px] font-bold text-emerald-600 bg-emerald-100 px-1 py-0.5 rounded leading-none">{investor.match}</span>
+                  </div>
+                  <div className="w-10 h-2 bg-text-tertiary rounded-sm" />
+                </div>
+              ))}
+            </div>
+            
+            {/* Right: Email Draft */}
+            <div className="w-[62%] bg-bg-card p-4 flex flex-col relative overflow-hidden">
+              <div className="flex items-center justify-between mb-4 border-b border-border-subtle pb-3">
+                <div className="flex items-center gap-2">
+                  <Mail className="w-4 h-4 text-text-tertiary" />
+                  <div className="w-20 h-2 bg-text-primary rounded-sm" />
+                </div>
+                <div className="w-12 h-5 bg-blush-peach rounded flex items-center justify-center">
+                  <span className="text-[9px] font-bold text-sienna-brown uppercase tracking-wider">Draft</span>
                 </div>
               </div>
-              <div className="flex flex-col gap-2">
-                 <div className="w-full h-1.5 bg-mist-gray rounded-sm" />
-                 <div className="w-full h-1.5 bg-mist-gray rounded-sm" />
-                 <div className="w-2/3 h-1.5 bg-mist-gray rounded-sm" />
+              
+              <div className="space-y-3 flex-1 pt-1">
+                <div className="w-1/3 h-2.5 bg-ink-black rounded-sm mb-4" />
+                <motion.div initial={{ width: "0%" }} whileInView={{ width: "100%" }} transition={{ duration: 2 }} className="w-full h-2 bg-text-secondary/30 rounded-sm" />
+                <motion.div initial={{ width: "0%" }} whileInView={{ width: "90%" }} transition={{ duration: 2, delay: 0.2 }} className="w-11/12 h-2 bg-text-secondary/30 rounded-sm" />
+                <motion.div initial={{ width: "0%" }} whileInView={{ width: "95%" }} transition={{ duration: 2, delay: 0.4 }} className="w-full h-2 bg-text-secondary/30 rounded-sm" />
+                <motion.div initial={{ width: "0%" }} whileInView={{ width: "70%" }} transition={{ duration: 2, delay: 0.6 }} className="w-2/3 h-2 bg-text-secondary/30 rounded-sm mb-4" />
+                <div className="w-1/4 h-2.5 bg-ink-black rounded-sm mt-5" />
               </div>
-              <div className="mt-4 w-20 h-6 bg-blush-peach rounded-md mx-auto" />
-           </div>
+              
+              {/* Send Button Animation */}
+              <div className="absolute bottom-4 right-4 flex items-center justify-center w-24 h-8 bg-ink-black rounded-lg overflow-hidden">
+                 <motion.div 
+                   animate={{ backgroundColor: ["#171717", "#171717", "#10b981", "#171717"] }} 
+                   transition={{ duration: 5, repeat: Infinity }}
+                   className="absolute inset-0 z-0"
+                 />
+                 <motion.div 
+                   animate={{ y: [0, -40, -40, 0], opacity: [1, 0, 0, 1] }}
+                   transition={{ duration: 5, repeat: Infinity }}
+                   className="flex items-center gap-2 absolute z-10 text-white"
+                 >
+                   <Send className="w-3.5 h-3.5" />
+                   <span className="text-[11px] font-semibold">Send</span>
+                 </motion.div>
+                 
+                 <motion.div 
+                   animate={{ y: [40, 40, 0, 40], opacity: [0, 0, 1, 0] }}
+                   transition={{ duration: 5, repeat: Infinity }}
+                   className="flex items-center gap-2 absolute z-10 text-white"
+                 >
+                   <CheckCircle className="w-3.5 h-3.5" />
+                   <span className="text-[11px] font-semibold">Sent</span>
+                 </motion.div>
+              </div>
+            </div>
+          </div>
         </div>
       ),
     },

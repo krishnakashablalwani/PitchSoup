@@ -56,7 +56,9 @@ Schema:
     "title": "string",
     "content": ["string"],
     "speakerNotes": "string",
-    "graphicsSuggestion": "string"
+    "visualType": "image | chart",
+    "unsplashKeywords": "string (1-2 highly relevant keywords for searching Unsplash stock photos, e.g., 'business,growth' or 'laptop,office'. ONLY if visualType is image)",
+    "chartData": [{"name": "string", "value": 100}] // ONLY if visualType is chart (use for TAM/SAM/SOM, financials, etc.)
   }
 ]
 

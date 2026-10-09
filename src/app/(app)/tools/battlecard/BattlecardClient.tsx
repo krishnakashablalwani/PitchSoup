@@ -213,11 +213,14 @@ export default function BattlecardClient({ pitches }: { pitches: Pitch[] }) {
                   key={i}
                   className="bg-bg-floating border border-border-subtle rounded-2xl p-6 shadow-subtle space-y-4"
                 >
-                  <div className="flex justify-between items-center pb-2 border-b border-border-subtle">
-                    <h4 className="font-serif text-lg font-medium text-text-primary">
+                  <div className="flex justify-between items-start gap-2 pb-2 border-b border-border-subtle">
+                    <h4 className="font-serif text-lg font-medium text-text-primary truncate">
                       {comp.name}
                     </h4>
-                    <span className="text-[11px] font-mono text-text-muted bg-bg-secondary px-2 py-0.5 rounded-md border border-border-subtle">
+                    <span 
+                      title={`Share: ${comp.marketShare}`}
+                      className="text-[11px] font-mono text-text-muted bg-bg-secondary px-2 py-0.5 rounded-md border border-border-subtle max-w-[50%] line-clamp-2 text-right shrink-0"
+                    >
                       Share: {comp.marketShare}
                     </span>
                   </div>

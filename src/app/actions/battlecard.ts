@@ -31,7 +31,7 @@ Generate a competitive battlecard. Return ONLY a raw JSON object (no markdown):
       "strengths": ["<string>", "<string>"],
       "weaknesses": ["<string>", "<string>"],
       "pricing": "<estimated pricing model>",
-      "marketShare": "<rough estimate>"
+      "marketShare": "<short percentage or 1-2 words estimate>"
     }
   ],
   "ourAdvantages": ["<string>", "<string>", "<string>"],

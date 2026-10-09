@@ -27,6 +27,8 @@ import {
   Layers,
   Image as ImageIcon,
   Globe,
+  History,
+  GitCommit
 } from "lucide-react";
 import { SlideVisual } from "@/components/deck/SlideVisual";
 
@@ -51,6 +53,7 @@ export default function DeckClient({
   const [showNotes, setShowNotes] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showVersionHistory, setShowVersionHistory] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [isPresenting, setIsPresenting] = useState(false);
   const [showNotesInPresent, setShowNotesInPresent] = useState(false);
@@ -114,6 +117,28 @@ export default function DeckClient({
     }
   };
 
+  const handleSlideEdit = async (field: keyof Slide, value: string, contentIdx?: number) => {
+    const updated = [...slides];
+    const current = { ...updated[currentSlide] };
+    
+    if (field === "content" && typeof contentIdx === "number") {
+      const newContent = [...current.content];
+      newContent[contentIdx] = value;
+      current.content = newContent;
+    } else {
+      (current as any)[field] = value;
+    }
+    
+    updated[currentSlide] = current;
+    setSlides(updated);
+    
+    try {
+      await updatePitchDeckData(pitch.id, updated);
+    } catch (err) {
+      console.error("Failed to save slide edit", err);
+    }
+  };
+
   const slide = slides[currentSlide] || slides[0];
 
   // Keyboard navigation for presentation mode and general deck view
@@ -170,16 +195,20 @@ export default function DeckClient({
       if (!slide.speakerNotes) return;
       const utterance = new SpeechSynthesisUtterance(slide.speakerNotes);
       const voices = window.speechSynthesis.getVoices();
+      // Target highly expressive Neural/Online voices first, then premium British/Australian accents for better emotional cadence
       const preferredVoice = voices.find(
         (v) =>
-          v.name.includes("Google") ||
-          v.name.includes("Premium") ||
-          v.name.includes("Natural"),
-      );
+          v.name.includes("Online (Natural)") || 
+          v.name.includes("Google UK English") || 
+          v.name.includes("Daniel") || 
+          v.name.includes("Karen") || 
+          v.name.includes("Serena")
+      ) || voices.find(v => v.lang.startsWith('en-GB') || v.lang.startsWith('en-AU'));
+      
       if (preferredVoice) utterance.voice = preferredVoice;
 
-      utterance.rate = 1.0;
-      utterance.pitch = 1.0;
+      utterance.rate = 0.95; // Slower for better emphasis
+      utterance.pitch = 1.05; // Slightly higher for more energy/emotion
       utterance.onend = () => setIsSpeaking(false);
       utterance.onerror = () => setIsSpeaking(false);
 
@@ -451,6 +480,17 @@ export default function DeckClient({
                     <span>Public Pitch Deck</span>
                   </Link>
 
+                  <button
+                    onClick={() => {
+                      setShowVersionHistory(true);
+                      setShowMoreMenu(false);
+                    }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-bg-secondary text-text-primary text-left transition-colors mt-1"
+                  >
+                    <History className="w-4 h-4 text-emerald-600" />
+                    <span>Version History</span>
+                  </button>
+
                   <div className="h-px bg-border-subtle my-1" />
 
                   <button
@@ -561,7 +601,13 @@ export default function DeckClient({
             <div className="my-auto py-2 grid grid-cols-1 md:grid-cols-12 gap-6 lg:gap-8 items-center flex-1 overflow-hidden">
               {/* Left Column: Title & Bullet Points (7 cols) */}
               <div className="md:col-span-7 flex flex-col justify-center pr-2">
-                <h2 className="font-serif text-lg md:text-xl lg:text-2xl text-text-primary font-normal tracking-tight leading-snug mb-4">
+                <h2 
+                  key={currentSlide + '-title'}
+                  contentEditable
+                  suppressContentEditableWarning
+                  onBlur={(e) => handleSlideEdit("title", e.currentTarget.textContent || "")}
+                  className="font-serif text-lg md:text-xl lg:text-2xl text-text-primary font-normal tracking-tight leading-snug mb-4 outline-none focus:ring-1 focus:ring-sienna-brown/50 rounded px-1 -ml-1 transition-all"
+                >
                   {slide.title}
                 </h2>
 
@@ -572,7 +618,15 @@ export default function DeckClient({
                       className="flex items-start gap-3 text-[13.5px] lg:text-[14.5px] text-text-secondary leading-relaxed font-sans"
                     >
                       <span className="w-1.5 h-1.5 rounded-full bg-sienna-brown mt-2 shrink-0" />
-                      <span>{point}</span>
+                      <span 
+                        key={currentSlide + '-point-' + idx}
+                        contentEditable
+                        suppressContentEditableWarning
+                        onBlur={(e) => handleSlideEdit("content", e.currentTarget.textContent || "", idx)}
+                        className="outline-none focus:bg-bg-secondary focus:ring-1 focus:ring-sienna-brown/50 rounded px-1 -ml-1 flex-1 transition-all"
+                      >
+                        {point}
+                      </span>
                     </li>
                   ))}
                 </ul>
@@ -637,7 +691,13 @@ export default function DeckClient({
               </div>
 
               <div className="flex-1 overflow-y-auto p-5 text-[14px] leading-relaxed text-text-secondary font-sans space-y-4">
-                <p className="whitespace-pre-wrap">
+                <p 
+                  key={currentSlide + '-notes'}
+                  contentEditable
+                  suppressContentEditableWarning
+                  onBlur={(e) => handleSlideEdit("speakerNotes", e.currentTarget.textContent || "")}
+                  className="whitespace-pre-wrap outline-none focus:bg-bg-floating p-2 -m-2 rounded transition-all"
+                >
                   {slide.speakerNotes || "No speaker notes written for this slide."}
                 </p>
               </div>
@@ -738,6 +798,74 @@ export default function DeckClient({
               >
                 Delete Forever
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Version History & Comparison Modal (Concept Mockup) */}
+      {showVersionHistory && (
+        <div className="fixed inset-0 bg-ink-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-bg-floating border border-border-subtle rounded-cards p-6 md:p-8 max-w-3xl w-full shadow-subtle-3 space-y-5">
+            <div className="flex items-center justify-between">
+              <h3 className="font-serif text-xl font-medium text-text-primary flex items-center gap-2">
+                <History className="w-5 h-5 text-emerald-600" />
+                Version History & Comparison
+              </h3>
+              <button onClick={() => setShowVersionHistory(false)} className="text-text-muted hover:text-text-primary">
+                ×
+              </button>
+            </div>
+
+            <p className="text-[13px] text-text-secondary">
+              Track how your pitch has evolved over time. Select a previous version to compare side-by-side or restore.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
+              <div className="md:col-span-1 space-y-2 border-r border-border-subtle pr-4">
+                <h4 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3">Saved Iterations</h4>
+                
+                <button className="w-full text-left p-3 rounded-lg bg-bg-secondary border border-emerald-500/30 text-text-primary text-[13px] relative flex flex-col gap-1">
+                  <span className="font-medium flex items-center gap-1.5"><GitCommit className="w-3.5 h-3.5 text-emerald-600"/> v3: Current (Editable)</span>
+                  <span className="text-text-muted text-[11px]">Just now • Pitch Score: 85/100</span>
+                </button>
+                
+                <button className="w-full text-left p-3 rounded-lg hover:bg-bg-secondary text-text-secondary hover:text-text-primary text-[13px] transition-colors flex flex-col gap-1">
+                  <span className="font-medium flex items-center gap-1.5"><GitCommit className="w-3.5 h-3.5"/> v2: Punchier Problem</span>
+                  <span className="text-text-muted text-[11px]">2 days ago • Pitch Score: 72/100</span>
+                </button>
+                
+                <button className="w-full text-left p-3 rounded-lg hover:bg-bg-secondary text-text-secondary hover:text-text-primary text-[13px] transition-colors flex flex-col gap-1">
+                  <span className="font-medium flex items-center gap-1.5"><GitCommit className="w-3.5 h-3.5"/> v1: Initial AI Draft</span>
+                  <span className="text-text-muted text-[11px]">1 week ago • Pitch Score: 60/100</span>
+                </button>
+              </div>
+
+              <div className="md:col-span-2">
+                <h4 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3 flex items-center justify-between">
+                  <span>Comparison View</span>
+                  <span className="text-[10px] bg-sienna-brown/10 text-sienna-brown px-2 py-0.5 rounded-full">+13 Point Improvement</span>
+                </h4>
+                
+                <div className="grid grid-cols-2 gap-4">
+                   <div className="bg-rose-500/5 border border-rose-500/20 rounded-lg p-4 space-y-2">
+                     <span className="text-[10px] font-mono text-rose-600 font-medium">v2: PREVIOUS</span>
+                     <h5 className="text-[13px] font-serif font-medium line-through decoration-rose-500/40 text-text-secondary">Logistics tracking is currently slow.</h5>
+                     <p className="text-[11px] text-text-muted">Too generic. Doesn't quantify the financial pain for investors.</p>
+                   </div>
+                   <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-lg p-4 space-y-2">
+                     <span className="text-[10px] font-mono text-emerald-600 font-medium">v3: CURRENT</span>
+                     <h5 className="text-[13px] font-serif font-medium text-text-primary">Manual logistics tracking costs the average 3PL $2.4M annually in lost inventory.</h5>
+                     <p className="text-[11px] text-emerald-600/80">Strong financial hook. VC-ready metric.</p>
+                   </div>
+                </div>
+
+                <div className="mt-6 flex justify-end">
+                   <button className="px-4 py-2 bg-bg-secondary border border-border-subtle rounded-buttons text-[13px] font-medium text-text-secondary hover:text-text-primary transition-colors">
+                     Restore Version 2
+                   </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>

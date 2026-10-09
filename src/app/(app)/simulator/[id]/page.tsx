@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, use } from "react";
+import { useState, use, useEffect } from "react";
 import Link from "next/link";
 import { chatWithCoach } from "@/app/actions/simulator";
 import {
@@ -10,6 +10,7 @@ import {
   Sparkles,
   MessageSquare,
   User,
+  Trash2,
 } from "lucide-react";
 
 export default function SimulatorPage({
@@ -23,6 +24,32 @@ export default function SimulatorPage({
   >([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // Load chat history from localStorage on mount
+  useEffect(() => {
+    const savedHistory = localStorage.getItem(`pitchsoup_simulator_${id}`);
+    if (savedHistory) {
+      try {
+        setMessages(JSON.parse(savedHistory));
+      } catch (e) {
+        console.error("Failed to parse chat history");
+      }
+    }
+    setIsLoaded(true);
+  }, [id]);
+
+  // Save chat history to localStorage whenever messages change
+  useEffect(() => {
+    if (isLoaded && messages.length > 0) {
+      localStorage.setItem(`pitchsoup_simulator_${id}`, JSON.stringify(messages));
+    }
+  }, [messages, id, isLoaded]);
+
+  const clearHistory = () => {
+    setMessages([]);
+    localStorage.removeItem(`pitchsoup_simulator_${id}`);
+  };
 
   const startSimulation = async () => {
     setMessages([
@@ -56,6 +83,8 @@ export default function SimulatorPage({
     setLoading(false);
   };
 
+  if (!isLoaded) return null; // Prevent hydration mismatch
+
   return (
     <div className="flex-1 min-h-screen bg-bg-primary text-text-primary p-6 md:p-8 flex flex-col font-sans">
       {/* Top Header */}
@@ -78,12 +107,23 @@ export default function SimulatorPage({
           </div>
         </div>
 
-        <Link
-          href={`/deck/${id}`}
-          className="text-xs font-medium text-sienna-brown dark:text-blush-peach hover:underline"
-        >
-          View Deck Slides →
-        </Link>
+        <div className="flex items-center gap-4">
+          {messages.length > 0 && (
+            <button
+              onClick={clearHistory}
+              className="text-xs font-medium text-rose-500 hover:text-rose-600 hover:underline flex items-center gap-1.5"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              Clear History
+            </button>
+          )}
+          <Link
+            href={`/deck/${id}`}
+            className="text-xs font-medium text-sienna-brown dark:text-blush-peach hover:underline flex items-center gap-1"
+          >
+            View Deck Slides &rarr;
+          </Link>
+        </div>
       </div>
 
       {/* Main Chat Panel */}

@@ -18,8 +18,14 @@ export default async function DashboardPage() {
   if (hour < 12) greeting = "Good morning";
   else if (hour < 17) greeting = "Good afternoon";
 
+  // Safely fetch user to prevent Clerk API rate limits/errors from crashing the page
+  const userPromise = currentUser().catch((err) => {
+    console.error("Failed to fetch current user from Clerk:", err);
+    return null;
+  });
+
   const [user, pitches] = await Promise.all([
-    currentUser(),
+    userPromise,
     getPitchesForUser(userId)
   ]);
 

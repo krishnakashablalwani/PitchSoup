@@ -3,14 +3,54 @@
 import { useState } from "react";
 import { createPitch } from "@/app/actions/pitch";
 import { SubmitButton } from "./SubmitButton";
-import { Sparkles, Loader2 } from "lucide-react";
+import { Sparkles, Loader2, ArrowRight, ChevronRight, CheckCircle2, MessageSquare } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+
+const ONBOARDING_QUESTIONS = [
+  {
+    id: "stage",
+    title: "What stage is your startup at?",
+    options: ["Idea stage", "Building an MVP", "Early traction / first customers", "Growing business"]
+  },
+  {
+    id: "goal",
+    title: "What do you need help with first?",
+    options: ["Create a pitch deck", "Find investors", "Build a financial model", "Prepare for investor meetings"]
+  },
+  {
+    id: "industry",
+    title: "What industry are you in?",
+    options: ["SaaS / AI", "Fintech", "Healthcare", "E-commerce", "Other"]
+  },
+  {
+    id: "experience",
+    title: "How familiar are you with fundraising?",
+    options: ["I'm a first-time founder", "I've done some fundraising", "I'm experienced"]
+  }
+];
 
 export default function PitchForm() {
+  const [step, setStep] = useState(0);
+  
+  // Onboarding state
+  const [answers, setAnswers] = useState<Record<string, string>>({});
+  
+  // Form state
   const [problem, setProblem] = useState("");
   const [solution, setSolution] = useState("");
   const [startupName, setStartupName] = useState("");
   const [features, setFeatures] = useState("");
+  const [businessModel, setBusinessModel] = useState("");
+  const [traction, setTraction] = useState("");
+  const [targetMarket, setTargetMarket] = useState("");
   const [loadingFeatures, setLoadingFeatures] = useState(false);
+
+  const handleSelectOption = (questionId: string, option: string) => {
+    setAnswers(prev => ({ ...prev, [questionId]: option }));
+    if (step < ONBOARDING_QUESTIONS.length - 1) {
+      setTimeout(() => setStep(step + 1), 300); // Auto-advance
+    }
+  };
 
   const generateFeatures = async () => {
     if (!problem) {
@@ -38,8 +78,81 @@ export default function PitchForm() {
     setLoadingFeatures(false);
   };
 
-  return (
-    <form action={createPitch} className="space-y-5">
+  const renderOnboardingStep = () => {
+    const question = ONBOARDING_QUESTIONS[step];
+    return (
+      <motion.div
+        key={step}
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: -20 }}
+        transition={{ duration: 0.3 }}
+        className="space-y-6"
+      >
+        <div className="flex items-center gap-2 text-sienna-brown font-medium mb-8 bg-sienna-brown/10 w-fit px-3 py-1.5 rounded-full text-sm">
+          <MessageSquare className="w-4 h-4" /> PitchSoup AI Copilot
+        </div>
+        
+        <h2 className="text-2xl font-serif text-text-primary">
+          Let's set up your startup workflow.
+        </h2>
+        <p className="text-text-secondary text-sm mb-6">
+          {question.title} <span className="text-text-tertiary">({step + 1}/{ONBOARDING_QUESTIONS.length})</span>
+        </p>
+
+        <div className="space-y-3">
+          {question.options.map(option => {
+            const isSelected = answers[question.id] === option;
+            return (
+              <button
+                key={option}
+                type="button"
+                onClick={() => handleSelectOption(question.id, option)}
+                className={`w-full text-left p-4 rounded-xl border flex items-center justify-between transition-all ${
+                  isSelected 
+                    ? "border-sienna-brown bg-blush-peach/10 text-sienna-brown shadow-subtle-2" 
+                    : "border-border-subtle bg-bg-secondary hover:border-text-tertiary text-text-secondary hover:text-text-primary"
+                }`}
+              >
+                <span className="font-medium text-[15px]">{option}</span>
+                {isSelected ? <CheckCircle2 className="w-5 h-5" /> : <ChevronRight className="w-5 h-5 opacity-40" />}
+              </button>
+            );
+          })}
+        </div>
+        
+        {step === ONBOARDING_QUESTIONS.length - 1 && answers[question.id] && (
+           <motion.button
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              type="button"
+              onClick={() => setStep(step + 1)}
+              className="w-full mt-6 bg-ink-black text-paper-white rounded-buttons py-3.5 font-medium flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
+           >
+             Generate my personalized workflow <ArrowRight className="w-4 h-4" />
+           </motion.button>
+        )}
+      </motion.div>
+    );
+  };
+
+  const renderFormStep = () => (
+    <motion.form 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      action={createPitch} 
+      className="space-y-5"
+    >
+      <div className="bg-bg-secondary/50 border border-border-subtle rounded-xl p-4 mb-6 flex items-start gap-3">
+         <Sparkles className="w-5 h-5 text-sienna-brown shrink-0 mt-0.5" />
+         <div>
+            <h4 className="text-sm font-medium text-text-primary">Workflow Customized!</h4>
+            <p className="text-xs text-text-secondary mt-1">
+              Based on your answers (<b>{answers.industry}</b>, <b>{answers.stage}</b>), we will tailor the AI generation for your deck. Let's get the core details.
+            </p>
+         </div>
+      </div>
+
       <div>
         <label className="block text-xs font-medium text-text-secondary uppercase tracking-wider mb-1.5">
           Startup Name
@@ -122,6 +235,8 @@ export default function PitchForm() {
           <input
             required
             name="businessModel"
+            value={businessModel}
+            onChange={e => setBusinessModel(e.target.value)}
             className="w-full bg-bg-secondary border border-border-subtle rounded-xl px-3.5 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-sienna-brown transition-all font-sans"
             placeholder="e.g. B2B SaaS, Marketplace"
           />
@@ -133,6 +248,8 @@ export default function PitchForm() {
           </label>
           <input
             name="traction"
+            value={traction}
+            onChange={e => setTraction(e.target.value)}
             className="w-full bg-bg-secondary border border-border-subtle rounded-xl px-3.5 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-sienna-brown transition-all font-sans"
             placeholder="e.g. $10k MRR, 50k Waitlist"
           />
@@ -146,12 +263,28 @@ export default function PitchForm() {
         <input
           required
           name="targetMarket"
+          value={targetMarket}
+          onChange={e => setTargetMarket(e.target.value)}
           className="w-full bg-bg-secondary border border-border-subtle rounded-xl px-3.5 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-sienna-brown transition-all font-sans"
           placeholder="Mid-to-large e-commerce fulfillment centers"
         />
       </div>
+      
+      {/* Hidden inputs to pass onboarding context to the server action */}
+      <input type="hidden" name="copilotStage" value={answers.stage || ""} />
+      <input type="hidden" name="copilotGoal" value={answers.goal || ""} />
+      <input type="hidden" name="copilotIndustry" value={answers.industry || ""} />
+      <input type="hidden" name="copilotExperience" value={answers.experience || ""} />
 
       <SubmitButton />
-    </form>
+    </motion.form>
+  );
+
+  return (
+    <div className="max-w-xl mx-auto py-8">
+      <AnimatePresence mode="wait">
+        {step < ONBOARDING_QUESTIONS.length ? renderOnboardingStep() : renderFormStep()}
+      </AnimatePresence>
+    </div>
   );
 }

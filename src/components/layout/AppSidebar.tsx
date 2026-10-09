@@ -17,6 +17,7 @@ import {
   LogOut,
   ChevronDown,
   ChevronUp,
+  LineChart,
 } from "lucide-react";
 
 export function AppSidebar() {
@@ -27,16 +28,16 @@ export function AppSidebar() {
 
   const navigation = [
     {
-      name: "Dashboard",
-      subtitle: "Overview & metrics",
-      href: "/dashboard",
-      icon: LayoutDashboard,
-    },
-    {
       name: "New Pitch",
       subtitle: "Generate AI deck",
       href: "/pitch/new",
       icon: PlusSquare,
+    },
+    {
+      name: "Dashboard",
+      subtitle: "Overview & metrics",
+      href: "/dashboard",
+      icon: LayoutDashboard,
     },
     {
       name: "Pitch Q&A",
@@ -61,6 +62,12 @@ export function AppSidebar() {
       subtitle: "Runway & cap table",
       href: "/tools/financials",
       icon: Calculator,
+    },
+    {
+      name: "Analytics",
+      subtitle: "Feedback & efficiency",
+      href: "/analytics",
+      icon: LineChart,
     },
   ];
 
