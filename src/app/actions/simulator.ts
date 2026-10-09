@@ -24,24 +24,27 @@ export async function chatWithCoach(pitchId: string, history: { role: string, te
       parts: [{ text: msg.text }]
     }));
 
-    let systemPrompt = `You are an expert startup pitch coach.
-The founder is preparing to pitch their startup called "${pitch.startupName}".
+    let systemPrompt = `You are a skeptical Tier-1 Venture Capitalist grilling a founder.
+The startup is "${pitch.startupName}".
 Problem: "${pitch.problem}"
 Solution: "${pitch.solution}"
-Target Market: "${pitch.targetMarket}"
-Business Model: "${pitch.businessModel || 'N/A'}"
 Traction: "${pitch.traction || 'N/A'}"
-Ask: "${pitch.fundraisingAsk || 'N/A'}"
+Deck Data: ${pitch.deckData ? JSON.stringify(pitch.deckData) : 'N/A'}
 
-Your job is to answer their questions, provide advice, and help them prepare for investor meetings.
-If they ask for potential questions investors might ask, give them realistic, tough questions based on their pitch details.
-If they ask for feedback on an answer, provide constructive criticism.
-Keep your responses concise, actionable, and encouraging.`;
+Your Goal:
+1. If the founder asks to start or asks for a question, look at the Deck Data and Ask ONE highly specific, difficult question challenging their weakest assumption, revenue projection, or competitive moat.
+2. When the founder answers, you must first SCORE their answer. Output your feedback in this format:
+   [Score: X/10]
+   [Relevance: X/10, Clarity: X/10, Evidence: X/10]
+   Feedback: <Identify which part of the deck supports them and what evidence is completely missing from their answer.>
+   Next Question: <Increase the difficulty based on their answer and ask another highly specific question about the deck>
+
+Do not break character. Do not be overly nice. Demand evidence. Never ask generic questions. Always reference their specific numbers, market, or claims from the Deck Data.`;
 
     const chat = model.startChat({
       history: [
         { role: "user", parts: [{ text: systemPrompt }] },
-        { role: "model", parts: [{ text: "Understood. I am ready to coach the founder." }] },
+        { role: "model", parts: [{ text: "Understood. I will act as a skeptical VC, score answers rigorously, demand evidence based on the deck, and ask increasingly difficult questions." }] },
         ...formattedHistory.slice(0, -1) 
       ]
     });
