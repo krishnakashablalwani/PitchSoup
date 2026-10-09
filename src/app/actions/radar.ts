@@ -1,5 +1,6 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+"use server";
 
+import { GoogleGenerativeAI } from "@google/generative-ai";
 export async function analyzeConsistency(pitch: any) {
   try {
     if (!process.env.GEMINI_API_KEY) {
