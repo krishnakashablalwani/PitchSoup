@@ -202,9 +202,17 @@ export default function ElevatorPitchClient({ pitches }: { pitches: Pitch[] }) {
         </div>
 
         {pitches.length === 0 && (
-          <p className="text-xs text-text-secondary text-center py-6">
-            No pitches found. Create your first pitch deck to generate scripts!
-          </p>
+          <div className="flex flex-col items-center justify-center py-8">
+            <p className="text-xs text-text-secondary text-center mb-4">
+              No pitches found. Create your first pitch deck to generate scripts!
+            </p>
+            <a
+              href="/pitch/new"
+              className="px-5 py-2.5 bg-ink-black text-paper-white rounded-lg text-xs font-medium shadow-subtle hover:scale-[1.02] active:scale-[0.98] transition-transform"
+            >
+              Create Pitch Deck
+            </a>
+          </div>
         )}
 
         <button

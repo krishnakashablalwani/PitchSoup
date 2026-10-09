@@ -185,14 +185,20 @@ export default function InvestorMatchClient({ pitches }: { pitches: Pitch[] }) {
       )}
 
       {pitches.length === 0 && (
-        <div className="text-center p-12 bg-bg-floating border border-border-subtle rounded-2xl shadow-subtle">
-          <FolderOpen className="w-8 h-8 text-text-muted mx-auto mb-2" />
+        <div className="text-center p-12 bg-bg-floating border border-border-subtle rounded-2xl shadow-subtle flex flex-col items-center">
+          <FolderOpen className="w-8 h-8 text-text-muted mb-2" />
           <h4 className="font-serif text-base font-medium text-text-primary mb-1">
             No Pitches Found
           </h4>
-          <p className="text-xs text-text-secondary font-sans">
+          <p className="text-xs text-text-secondary font-sans mb-4">
             Create a pitch deck first before running investor thesis matching.
           </p>
+          <a
+            href="/pitch/new"
+            className="px-5 py-2.5 bg-ink-black text-paper-white rounded-lg text-xs font-medium shadow-subtle hover:scale-[1.02] active:scale-[0.98] transition-transform"
+          >
+            Create Pitch Deck
+          </a>
         </div>
       )}
     </div>

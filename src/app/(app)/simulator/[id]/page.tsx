@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, use, useEffect } from "react";
+import { useState, use, useEffect, useRef } from "react";
 import Link from "next/link";
 import { chatWithCoach } from "@/app/actions/simulator";
 import {
@@ -25,6 +25,17 @@ export default function SimulatorPage({
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    if (isLoaded) {
+      scrollToBottom();
+    }
+  }, [messages, isLoaded, loading]);
 
   // Load chat history from localStorage on mount
   useEffect(() => {
@@ -203,6 +214,7 @@ export default function SimulatorPage({
                   </div>
                 </div>
               )}
+              <div ref={messagesEndRef} />
             </div>
           )}
 
