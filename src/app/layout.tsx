@@ -3,6 +3,8 @@ import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ThemeProvider } from "@/components/theme-provider";
 
+import { Toaster } from 'react-hot-toast';
+
 export const metadata: Metadata = {
   title: "PitchSoup",
   description:
@@ -40,6 +42,7 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             {children}
+            <Toaster position="bottom-right" />
           </ThemeProvider>
         </body>
       </html>

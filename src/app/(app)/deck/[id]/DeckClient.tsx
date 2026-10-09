@@ -31,6 +31,7 @@ import {
   GitCommit
 } from "lucide-react";
 import { SlideVisual } from "@/components/deck/SlideVisual";
+import { toast } from "react-hot-toast";
 
 interface Slide {
   title: string;
@@ -231,6 +232,7 @@ export default function DeckClient({
     const url = `${window.location.origin}/p/${pitch.id}`;
     navigator.clipboard.writeText(url);
     setCopiedLink(true);
+    toast.success("Public link copied to clipboard");
     setTimeout(() => setCopiedLink(false), 2500);
   };
 
@@ -303,8 +305,10 @@ export default function DeckClient({
       pdf.save(
         `${pitch.startupName.toLowerCase().replace(/[^a-z0-9]/g, "-")}-deck.pdf`,
       );
+      toast.success("Deck exported as PDF");
     } catch (err) {
       console.error("PDF Export error:", err);
+      toast.error("Failed to export PDF");
     }
     setIsExportingPDF(false);
   };

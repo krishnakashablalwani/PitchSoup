@@ -12,6 +12,8 @@ import {
   User,
   Trash2,
 } from "lucide-react";
+import { toast } from "react-hot-toast";
+
 
 export default function SimulatorPage({
   params,
@@ -60,6 +62,7 @@ export default function SimulatorPage({
   const clearHistory = () => {
     setMessages([]);
     localStorage.removeItem(`pitchsoup_simulator_${id}`);
+    toast.success("Chat history cleared");
   };
 
   const startSimulation = async () => {
