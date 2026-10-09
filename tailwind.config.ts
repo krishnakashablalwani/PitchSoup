@@ -50,12 +50,12 @@ const config: Config = {
         "deep-space": "var(--color-ink-black)",
       },
       borderRadius: {
-        "cards": "24px",
-        "images": "12px",
-        "inputs": "16px",
+        "cards": "32px",
+        "images": "20px",
+        "inputs": "24px",
         "buttons": "9999px",
-        "smallcards": "16px",
-        "elevatedcards": "20px",
+        "smallcards": "24px",
+        "elevatedcards": "28px",
       },
       fontFamily: {
         sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"],
