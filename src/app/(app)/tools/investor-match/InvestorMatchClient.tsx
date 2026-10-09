@@ -82,8 +82,8 @@ export default function InvestorMatchClient({ pitches }: { pitches: Pitch[] }) {
               }}
               className={`text-left p-4 rounded-xl border transition-all ${
                 selectedPitch === p.id
-                  ? "border-sienna-brown/60 bg-blush-peach/25 shadow-xs"
-                  : "border-border-subtle bg-bg-secondary hover:bg-bg-card"
+                  ? "border-sienna-brown ring-2 ring-sienna-brown bg-blush-peach/30 shadow-sm"
+                  : "border-border-subtle bg-bg-secondary hover:bg-bg-card hover:border-border-subtle"
               }`}
             >
               <p className="font-serif text-sm font-medium text-text-primary truncate">
