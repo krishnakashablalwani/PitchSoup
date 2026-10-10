@@ -89,36 +89,14 @@ export default function AnalyticsClient({ pitches }: { pitches: Pitch[] }) {
           </h2>
           
           <div className="flex flex-col gap-5 flex-1">
-            <div className="bg-blush-peach/30 border border-sienna-brown/20 p-4 rounded-xl relative overflow-hidden group hover:bg-blush-peach/40 transition-colors cursor-default">
+            <div className="bg-blush-peach/30 border border-sienna-brown/20 p-4 rounded-xl relative overflow-hidden">
               <div className="absolute top-0 right-0 w-16 h-16 bg-blush-peach blur-[20px] rounded-full" />
-              <h4 className="text-[14px] font-medium text-sienna-brown mb-1 relative z-10 flex items-center justify-between">
-                <span>Deck Iteration Speed</span>
-                <span className="text-[10px] bg-sienna-brown/10 text-sienna-brown px-2 py-0.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-                  Source included
-                </span>
-              </h4>
-              <div className="text-[13px] text-sienna-brown/80 relative z-10 flex flex-col">
-                {decksGenerated > 0 ? (
-                  <>
-                    <span>
-                      AI drafting is saving you approx <strong>{decksGenerated * 100} hours</strong> of manual strategy and design.
-                    </span>
-                    <div className="mt-3 text-[12px] h-0 opacity-0 group-hover:h-auto group-hover:opacity-100 transition-all duration-300 overflow-hidden border-t border-sienna-brown/20 group-hover:pt-3">
-                      Founders typically spend 100+ hours building a fundable deck, yet investors average just 3m 44s reviewing it.{' '}
-                      <a 
-                        href="https://www.docsend.com/pitch-deck-metrics/" 
-                        target="_blank" 
-                        rel="noreferrer" 
-                        className="underline font-semibold hover:text-sienna-brown inline-flex items-center gap-0.5 mt-1"
-                      >
-                        Read the research ↗
-                      </a>
-                    </div>
-                  </>
-                ) : (
-                  <span>Start generating decks to measure your time savings.</span>
-                )}
-              </div>
+              <h4 className="text-[14px] font-medium text-sienna-brown mb-1 relative z-10">Deck Iteration Speed</h4>
+              <p className="text-[13px] text-sienna-brown/80 relative z-10">
+                {decksGenerated > 0 
+                  ? `AI drafting is saving you approx ${decksGenerated * 100} hours of manual strategy and design (based on DocSend research that founders spend 100+ hours per deck).` 
+                  : `Start generating decks to measure your time savings.`}
+              </p>
             </div>
             
             <div className="bg-bg-secondary p-4 rounded-xl border border-border-subtle relative mt-auto text-center py-8">
