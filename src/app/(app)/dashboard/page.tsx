@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getPitchesForUser } from '@/lib/mockPitch';
 import { Presentation, MessageSquare, Target } from "lucide-react";
+import { DeletePitchButton } from "./DeletePitchButton";
 
 export const dynamic = 'force-dynamic';
 
@@ -93,9 +94,12 @@ export default async function DashboardPage() {
                         </span>
                       </div>
                     </div>
-                    <span className="text-sienna-brown font-medium text-[14px] flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                      View →
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sienna-brown font-medium text-[14px] flex items-center gap-1 group-hover:translate-x-1 transition-transform mr-2">
+                        View →
+                      </span>
+                      <DeletePitchButton pitchId={pitch.id} />
+                    </div>
                   </Link>
                 ))}
               </div>
