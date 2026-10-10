@@ -3,7 +3,13 @@
 import { useFormStatus } from "react-dom";
 import { Sparkles, Loader2 } from "lucide-react";
 
-export function SubmitButton() {
+export function SubmitButton({ 
+  label = "Generate Deck", 
+  loadingLabel = "Querying live market data & cooking deck... (~15s)"
+}: { 
+  label?: string; 
+  loadingLabel?: string; 
+}) {
   const { pending } = useFormStatus();
 
   return (
@@ -17,12 +23,12 @@ export function SubmitButton() {
       {pending ? (
         <>
           <Loader2 className="w-4 h-4 animate-spin text-sienna-brown dark:text-blush-peach" />
-          <span>Querying live market data & cooking deck... (~15s)</span>
+          <span>{loadingLabel}</span>
         </>
       ) : (
         <>
           <Sparkles className="w-4 h-4 text-blush-peach" />
-          <span>Generate Deck</span>
+          <span>{label}</span>
         </>
       )}
     </button>
