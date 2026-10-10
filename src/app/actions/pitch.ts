@@ -109,6 +109,7 @@ export async function createPitchFromBrainDump(formData: FormData) {
 
   const braindump = formData.get('braindump') as string;
   let generatedDeckJson = null;
+  let redirectUrl: string | null = null;
 
   try {
     if (!process.env.GEMINI_API_KEY) {
@@ -175,14 +176,18 @@ export async function createPitchFromBrainDump(formData: FormData) {
 
     if (error || !data) {
       console.error("Supabase Error: ", error);
-      redirect(`/pitch/new?error=${encodeURIComponent(error?.message || 'Unknown Supabase error')}`);
+      redirectUrl = `/pitch/new?error=${encodeURIComponent(error?.message || 'Unknown Supabase error')}`;
+    } else {
+      redirectUrl = `/deck/${data.id}`;
     }
-
-    redirect(`/deck/${data.id}`);
 
   } catch (err: any) {
     console.error("Gemini Generation Error:", err);
-    redirect(`/pitch/new?error=${encodeURIComponent(err?.message || 'Failed to generate deck from braindump')}`);
+    redirectUrl = `/pitch/new?error=${encodeURIComponent(err?.message || 'Failed to generate deck from braindump')}`;
+  }
+
+  if (redirectUrl) {
+    redirect(redirectUrl);
   }
 }
 

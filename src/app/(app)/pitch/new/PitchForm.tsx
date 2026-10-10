@@ -187,7 +187,7 @@ export default function PitchForm() {
             <Zap className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-base font-semibold text-text-primary mb-1">AI Brain Dump</h3>
+            <h3 className="text-base font-semibold text-text-primary mb-1">Magic Mode</h3>
             <p className="text-xs text-text-secondary leading-relaxed">Fastest way. Just type a messy paragraph of what you're building, and the AI will extrapolate the business model, market size, and generate 12 slides instantly.</p>
           </div>
         </button>
