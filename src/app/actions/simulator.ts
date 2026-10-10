@@ -59,8 +59,17 @@ Do not break character. Do not be overly nice. Demand evidence. Never ask generi
       text = response.text().trim();
     } catch (aiError: any) {
       const errorStr = String(aiError).toLowerCase();
-      if (errorStr.includes("503") || errorStr.includes("overloaded") || errorStr.includes("unavailable")) {
-        console.log("Gemini 503 error, falling back to Groq...");
+      if (
+        aiError.status === 503 ||
+        aiError.status === 429 ||
+        errorStr.includes("503") ||
+        errorStr.includes("429") ||
+        errorStr.includes("overloaded") ||
+        errorStr.includes("unavailable") ||
+        errorStr.includes("too many requests") ||
+        errorStr.includes("quota exceeded")
+      ) {
+        console.log("Gemini error (503/429/Quota), falling back to Groq...");
         const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
         
         const groqHistory = history.map(msg => ({
@@ -76,7 +85,7 @@ Do not break character. Do not be overly nice. Demand evidence. Never ask generi
 
         const chatCompletion = await groq.chat.completions.create({
           messages: messages,
-          model: "llama-3.1-8b-instant",
+          model: "openai/gpt-oss-120b",
         });
 
         text = chatCompletion.choices[0]?.message?.content?.trim() || "";

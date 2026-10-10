@@ -4,7 +4,7 @@ import Groq from "groq-sdk";
 export async function generateContentWithFallback(
   prompt: string,
   modelName: string = "gemini-2.5-flash",
-  groqModel: string = "llama-3.1-8b-instant"
+  groqModel: string = "openai/gpt-oss-120b"
 ): Promise<string> {
   let text = "";
   try {
@@ -19,11 +19,15 @@ export async function generateContentWithFallback(
     const errorStr = String(error).toLowerCase();
     if (
       error.status === 503 ||
+      error.status === 429 ||
       errorStr.includes("503") ||
+      errorStr.includes("429") ||
       errorStr.includes("overloaded") ||
-      errorStr.includes("unavailable")
+      errorStr.includes("unavailable") ||
+      errorStr.includes("too many requests") ||
+      errorStr.includes("quota exceeded")
     ) {
-      console.log("Gemini 503 error, falling back to Groq...");
+      console.log("Gemini error (503/429/Quota), falling back to Groq...");
       const groq = new Groq({
         apiKey: process.env.GROQ_API_KEY,
       });

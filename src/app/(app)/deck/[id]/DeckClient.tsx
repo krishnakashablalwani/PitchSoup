@@ -230,13 +230,6 @@ export default function DeckClient({
     setIsEditing(false);
   };
 
-  const handleShareLink = () => {
-    const url = `${window.location.origin}/p/${pitch.id}`;
-    navigator.clipboard.writeText(url);
-    setCopiedLink(true);
-    toast.success("Public link copied to clipboard");
-    setTimeout(() => setCopiedLink(false), 2500);
-  };
 
   const handleExportPDF = async () => {
     setIsExportingPDF(true);
@@ -429,16 +422,6 @@ export default function DeckClient({
             <span className="hidden lg:inline">PDF</span>
           </button>
 
-          {/* Share Link */}
-          <button
-            onClick={handleShareLink}
-            className="p-1.5 md:px-2.5 md:py-1.5 rounded-lg border border-border-subtle hover:bg-bg-secondary text-text-secondary hover:text-text-primary text-xs font-medium transition-colors flex items-center gap-1.5"
-            title="Copy Public Link"
-          >
-            {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Share2 className="w-3.5 h-3.5" />}
-            <span className="hidden lg:inline">{copiedLink ? "Copied" : "Share"}</span>
-          </button>
-
 
           {/* More Tools Dropdown */}
           <div className="relative">
@@ -475,15 +458,7 @@ export default function DeckClient({
                     <span>Diligence Q&A Simulator</span>
                   </Link>
 
-                  <Link
-                    href={`/p/${pitch.id}`}
-                    target="_blank"
-                    onClick={() => setShowMoreMenu(false)}
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-bg-secondary text-text-primary transition-colors"
-                  >
-                    <ExternalLink className="w-4 h-4 text-text-secondary" />
-                    <span>Public Pitch Deck</span>
-                  </Link>
+
 
                   <button
                     onClick={() => {
