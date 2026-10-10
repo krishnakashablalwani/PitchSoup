@@ -167,35 +167,24 @@ export default function PublicPitchViewer({
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.4, ease: "easeInOut" }}
-                className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center"
+                className="flex items-center"
               >
-                <div className="lg:col-span-7 space-y-8">
-                  <h3 className="text-heading font-display font-normal tracking-[-1.68px] text-text-primary">
+                <div className="w-full max-w-2xl space-y-8">
+                  <h3 className="text-[2.5rem] md:text-heading font-display font-normal tracking-[-1.68px] text-text-primary leading-tight">
                     {slide.title}
                   </h3>
 
-                  <ul className="space-y-5">
+                  <ul className="space-y-6">
                     {slide.content?.map((bullet, idx) => (
                       <li
                         key={idx}
-                        className="text-body font-sans font-extralight text-text-secondary leading-[1.5] flex items-start gap-3"
+                        className="text-body font-sans font-extralight text-text-secondary leading-[1.6] flex items-start gap-4"
                       >
-                        <span className="w-1.5 h-1.5 rounded-full bg-sienna-brown dark:bg-blush-peach mt-2 shrink-0" />
+                        <span className="w-2 h-2 rounded-full bg-sienna-brown dark:bg-blush-peach mt-2.5 shrink-0" />
                         <span>{bullet}</span>
                       </li>
                     ))}
                   </ul>
-                </div>
-
-                <div className="lg:col-span-5 flex justify-center items-center">
-                  <div className="w-full max-w-sm">
-                    <SlideVisual
-                      slide={slide}
-                      slideIndex={currentSlide}
-                      startupName={pitch.startupName}
-                      isPresentationMode={true}
-                    />
-                  </div>
                 </div>
               </motion.div>
             </AnimatePresence>

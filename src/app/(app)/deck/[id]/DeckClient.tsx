@@ -602,27 +602,26 @@ export default function DeckClient({
               </span>
             </div>
 
-            {/* Slide Content Core: Balanced 2-Column Split */}
-            <div className="my-auto py-2 grid grid-cols-1 md:grid-cols-12 gap-6 lg:gap-8 items-center flex-1 overflow-hidden">
-              {/* Left Column: Title & Bullet Points (7 cols) */}
-              <div className="md:col-span-7 flex flex-col justify-center pr-2">
+            {/* Slide Content Core */}
+            <div className="my-auto py-2 flex items-center flex-1 overflow-hidden">
+              <div className="w-full max-w-4xl mx-auto flex flex-col justify-center pr-2">
                 <h2 
                   key={currentSlide + '-title'}
                   contentEditable
                   suppressContentEditableWarning
                   onBlur={(e) => handleSlideEdit("title", e.currentTarget.textContent || "")}
-                  className="font-serif text-lg md:text-xl lg:text-2xl text-text-primary font-normal tracking-tight leading-snug mb-4 outline-none focus:ring-1 focus:ring-sienna-brown/50 rounded px-1 -ml-1 transition-all"
+                  className="font-serif text-[1.75rem] md:text-[2rem] lg:text-[2.5rem] text-text-primary font-normal tracking-tight leading-snug mb-6 outline-none focus:ring-1 focus:ring-sienna-brown/50 rounded px-1 -ml-1 transition-all"
                 >
                   {slide.title}
                 </h2>
 
-                <ul className="space-y-2.5">
+                <ul className="space-y-4">
                   {slide.content.map((point, idx) => (
                     <li
                       key={idx}
-                      className="flex items-start gap-3 text-[13.5px] lg:text-[14.5px] text-text-secondary leading-relaxed font-sans"
+                      className="flex items-start gap-4 text-[15px] lg:text-[17px] text-text-secondary leading-relaxed font-sans"
                     >
-                      <span className="w-1.5 h-1.5 rounded-full bg-sienna-brown mt-2 shrink-0" />
+                      <span className="w-2 h-2 rounded-full bg-sienna-brown mt-2.5 shrink-0" />
                       <span 
                         key={currentSlide + '-point-' + idx}
                         contentEditable
@@ -635,14 +634,6 @@ export default function DeckClient({
                     </li>
                   ))}
                 </ul>
-              </div>
-
-              <div className="md:col-span-5 h-full flex flex-col justify-center items-center">
-                <SlideVisual
-                  slide={slide}
-                  slideIndex={currentSlide}
-                  startupName={pitch.startupName}
-                />
               </div>
             </div>
 
@@ -921,37 +912,24 @@ export default function DeckClient({
             </div>
 
             {/* Main Stage Presentation Center */}
-            <div className="flex-1 flex items-center justify-center relative my-6 w-full max-w-6xl mx-auto px-4">
-              <div className="w-full grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-12 items-center">
-                {/* Left: Presentation Text */}
-                <div className="md:col-span-7 space-y-6 text-left">
-                  <h1 className="font-serif text-[2.2rem] md:text-[3rem] font-normal text-white leading-tight tracking-tight">
+            <div className="flex-1 flex items-center justify-center relative my-6 w-full max-w-5xl mx-auto px-4">
+              <div className="w-full flex flex-col justify-center">
+                <div className="space-y-8 text-left max-w-4xl mx-auto">
+                  <h1 className="font-serif text-[3rem] md:text-[4rem] font-normal text-white leading-tight tracking-tight">
                     {slide.title}
                   </h1>
 
-                  <ul className="space-y-4">
+                  <ul className="space-y-6">
                     {slide.content.map((point, idx) => (
                       <li
                         key={idx}
-                        className="flex items-start gap-3.5 text-base md:text-lg text-neutral-300 leading-relaxed font-sans"
+                        className="flex items-start gap-4 text-xl md:text-2xl text-neutral-300 leading-relaxed font-sans"
                       >
-                        <span className="w-2 h-2 rounded-full bg-sienna-brown mt-2 shrink-0" />
+                        <span className="w-2.5 h-2.5 rounded-full bg-sienna-brown mt-3 shrink-0" />
                         <span>{point}</span>
                       </li>
                     ))}
                   </ul>
-                </div>
-
-                {/* Right: Attached Presentation Visual */}
-                <div className="md:col-span-5 flex justify-center items-center">
-                  <div className="w-full max-w-md bg-neutral-900/90 border border-white/10 rounded-2xl p-3 shadow-2xl">
-                    <SlideVisual
-                      slide={slide}
-                      slideIndex={currentSlide}
-                      startupName={pitch.startupName}
-                      isPresentationMode={true}
-                    />
-                  </div>
                 </div>
               </div>
 
