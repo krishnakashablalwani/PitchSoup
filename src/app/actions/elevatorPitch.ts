@@ -1,6 +1,6 @@
 "use server";
 
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { generateContentWithFallback } from "@/lib/aiFallback";
 
 export async function generateElevatorPitch(pitch: {
   startupName: string;
@@ -13,13 +13,6 @@ export async function generateElevatorPitch(pitch: {
   deckData?: any;
 }) {
   try {
-    if (!process.env.GEMINI_API_KEY) {
-      throw new Error("GEMINI_API_KEY is not configured.");
-    }
-
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-
     const prompt = `You are a world-class startup communications coach (having coached founders for Y Combinator Demo Days, TechCrunch Disrupt Battlefield, and major seed fundraises).
 
 Generate a comprehensive set of verbal pitch scripts for this startup:
@@ -55,9 +48,7 @@ Return ONLY a raw JSON object (no markdown formatting, no code fences):
   ]
 }`;
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text().trim();
+    const text = await generateContentWithFallback(prompt);
     const cleanText = text.replace(/```json/gi, "").replace(/```/g, "").trim();
     return JSON.parse(cleanText);
   } catch (error) {

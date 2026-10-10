@@ -1,6 +1,6 @@
 "use server";
 
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { generateContentWithFallback } from "@/lib/aiFallback";
 
 export async function generateBattlecard(pitch: {
   startupName: string;
@@ -8,12 +8,6 @@ export async function generateBattlecard(pitch: {
   solution: string;
   targetMarket: string;
 }, competitors: string) {
-  if (!process.env.GEMINI_API_KEY) {
-    throw new Error("GEMINI_API_KEY is not configured.");
-  }
-
-  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
   const prompt = `You are a competitive intelligence analyst for a startup.
 
@@ -40,9 +34,7 @@ Generate a competitive battlecard. Return ONLY a raw JSON object (no markdown):
 }`;
 
   try {
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text().trim();
+    const text = await generateContentWithFallback(prompt);
     const cleanText = text.replace(/```json/gi, "").replace(/```/g, "").trim();
     return JSON.parse(cleanText);
   } catch (error) {

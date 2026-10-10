@@ -1,9 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import { auth } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
-import { GoogleGenerativeAI } from '@google/generative-ai';
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+import { generateContentWithFallback } from '@/lib/aiFallback';
 
 export async function POST(req: NextRequest) {
   try {
@@ -27,8 +25,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Pitch not found' }, { status: 404 });
     }
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
-    
     const prompt = `You are an expert startup founder writing a highly effective, concise cold email to a VC.
 Draft a cold email to ${targetVC} pitching this startup.
 
@@ -44,8 +40,7 @@ Guidelines:
 4. Include a clear call to action (Ask for a 15-minute chat).
 5. Output ONLY the email text (Subject and Body).`;
 
-    const result = await model.generateContent(prompt);
-    const responseText = result.response.text();
+    const responseText = await generateContentWithFallback(prompt);
 
     return NextResponse.json({ email: responseText });
   } catch (error: unknown) {

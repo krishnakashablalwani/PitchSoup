@@ -1,16 +1,9 @@
 "use server";
 
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { generateContentWithFallback } from "@/lib/aiFallback";
 
 export async function findInvestors(pitch: any) {
   try {
-    if (!process.env.GEMINI_API_KEY) {
-      throw new Error("GEMINI_API_KEY is not configured.");
-    }
-
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-
     const prompt = `
 You are an expert VC matchmaker. 
 Analyze the following startup pitch:
@@ -33,11 +26,10 @@ Format the output strictly as a JSON array of objects with the following keys:
 Return ONLY the raw JSON array. Do not include markdown formatting like \`\`\`json.
 `;
 
-    const result = await model.generateContent(prompt);
-    let text = result.response.text();
-    text = text.replace(/```json/g, "").replace(/```/g, "").trim();
+    const text = await generateContentWithFallback(prompt);
+    const cleanText = text.replace(/```json/g, "").replace(/```/g, "").trim();
     
-    return JSON.parse(text);
+    return JSON.parse(cleanText);
   } catch (error) {
     console.error("Gemini Investor Match Error:", error);
     return [];

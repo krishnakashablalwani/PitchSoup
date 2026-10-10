@@ -3,6 +3,7 @@
 import { getPitchById } from '@/lib/mockPitch';
 import { auth } from '@clerk/nextjs/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import Groq from 'groq-sdk';
 
 export async function chatWithCoach(pitchId: string, history: { role: string, text: string }[]) {
   try {
@@ -15,14 +16,6 @@ export async function chatWithCoach(pitchId: string, history: { role: string, te
     if (!process.env.GEMINI_API_KEY) {
       throw new Error("GEMINI_API_KEY is not configured.");
     }
-
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-
-    const formattedHistory = history.map(msg => ({
-      role: msg.role === 'coach' ? 'model' : 'user',
-      parts: [{ text: msg.text }]
-    }));
 
     let systemPrompt = `You are a skeptical Tier-1 Venture Capitalist grilling a founder.
 The startup is "${pitch.startupName}".
@@ -41,18 +34,56 @@ Your Goal:
 
 Do not break character. Do not be overly nice. Demand evidence. Never ask generic questions. Always reference their specific numbers, market, or claims from the Deck Data.`;
 
-    const chat = model.startChat({
-      history: [
-        { role: "user", parts: [{ text: systemPrompt }] },
-        { role: "model", parts: [{ text: "Understood. I will act as a skeptical VC, score answers rigorously, demand evidence based on the deck, and ask increasingly difficult questions." }] },
-        ...formattedHistory.slice(0, -1) 
-      ]
-    });
+    let text = "";
 
-    const latestUserMessage = history[history.length - 1].text;
-    const result = await chat.sendMessage(latestUserMessage);
-    const response = await result.response;
-    const text = response.text().trim();
+    try {
+      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
+      const formattedHistory = history.map(msg => ({
+        role: msg.role === 'coach' ? 'model' : 'user',
+        parts: [{ text: msg.text }]
+      }));
+
+      const chat = model.startChat({
+        history: [
+          { role: "user", parts: [{ text: systemPrompt }] },
+          { role: "model", parts: [{ text: "Understood. I will act as a skeptical VC, score answers rigorously, demand evidence based on the deck, and ask increasingly difficult questions." }] },
+          ...formattedHistory.slice(0, -1) 
+        ]
+      });
+
+      const latestUserMessage = history[history.length - 1].text;
+      const result = await chat.sendMessage(latestUserMessage);
+      const response = await result.response;
+      text = response.text().trim();
+    } catch (aiError: any) {
+      const errorStr = String(aiError).toLowerCase();
+      if (errorStr.includes("503") || errorStr.includes("overloaded") || errorStr.includes("unavailable")) {
+        console.log("Gemini 503 error, falling back to Groq...");
+        const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+        
+        const groqHistory = history.map(msg => ({
+          role: msg.role === 'coach' ? 'assistant' as const : 'user' as const,
+          content: msg.text
+        }));
+
+        const messages = [
+          { role: "system" as const, content: systemPrompt },
+          { role: "assistant" as const, content: "Understood. I will act as a skeptical VC, score answers rigorously, demand evidence based on the deck, and ask increasingly difficult questions." },
+          ...groqHistory
+        ];
+
+        const chatCompletion = await groq.chat.completions.create({
+          messages: messages,
+          model: "llama-3.1-8b-instant",
+        });
+
+        text = chatCompletion.choices[0]?.message?.content?.trim() || "";
+      } else {
+        throw aiError;
+      }
+    }
 
     return text;
   } catch (error: any) {
