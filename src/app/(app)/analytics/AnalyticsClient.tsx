@@ -106,7 +106,7 @@ export default function AnalyticsClient({ pitches }: { pitches: Pitch[] }) {
                     <div className="mt-3 text-[12px] h-0 opacity-0 group-hover:h-auto group-hover:opacity-100 transition-all duration-300 overflow-hidden border-t border-sienna-brown/20 group-hover:pt-3">
                       Founders typically spend 100+ hours building a fundable deck, yet investors average just 3m 44s reviewing it.{' '}
                       <a 
-                        href="https://startupfundraising.com/how-long-does-it-take-to-create-a-pitch-deck/" 
+                        href="https://docsend.com/index/pitch-deck-interest-metrics/" 
                         target="_blank" 
                         rel="noreferrer" 
                         className="underline font-semibold hover:text-sienna-brown inline-flex items-center gap-0.5 mt-1"
