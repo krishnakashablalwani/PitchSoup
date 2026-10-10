@@ -12,8 +12,12 @@ import {
   Sparkles,
   Target,
   PlusCircle,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 type Pitch = {
   id: string;
@@ -29,6 +33,7 @@ export default function SimulatorClient({ pitches }: { pitches: Pitch[] }) {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [voiceEnabled, setVoiceEnabled] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -75,12 +80,41 @@ export default function SimulatorClient({ pitches }: { pitches: Pitch[] }) {
   };
 
   const startSimulation = async () => {
+    const welcome = "Hi! I've reviewed your pitch deck. I'm your pitch coach. What would you like to prepare for? I can ask you hard questions, or you can ask me for advice on specific slides.";
     setMessages([
       {
         role: "coach",
-        text: "Hi! I've reviewed your pitch deck. I'm your pitch coach. What would you like to prepare for? I can ask you hard questions, or you can ask me for advice on specific slides.",
+        text: welcome,
       },
     ]);
+    if (voiceEnabled) speakText(welcome);
+  };
+
+  const speakText = (text: string) => {
+    if (!window.speechSynthesis) return;
+    
+    // Stop any ongoing speech
+    window.speechSynthesis.cancel();
+    
+    // Remove scoring brackets and labels to make it sound conversational
+    const cleanText = text
+      .replace(/\[Score:.*?\]/g, '')
+      .replace(/\[Relevance:.*?\]/g, '')
+      .replace(/Feedback:/gi, '')
+      .replace(/Next Question:/gi, '')
+      .replace(/\*/g, '')
+      .trim();
+      
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.rate = 1.05; // slightly faster for VC feel
+    utterance.pitch = 0.9;
+    
+    const voices = window.speechSynthesis.getVoices();
+    // Try to find a good deep/professional voice
+    const voice = voices.find(v => v.lang.includes('en-GB') || v.name.includes('Google UK English Male') || v.name.includes('Daniel')) || voices[0];
+    if (voice) utterance.voice = voice;
+
+    window.speechSynthesis.speak(utterance);
   };
 
   const handleAnswer = async () => {
@@ -95,6 +129,7 @@ export default function SimulatorClient({ pitches }: { pitches: Pitch[] }) {
     try {
       const coachResponse = await chatWithCoach(selectedPitch.id, newMessages);
       setMessages([...newMessages, { role: "coach", text: coachResponse }]);
+      if (voiceEnabled) speakText(coachResponse);
     } catch (err) {
       console.error(err);
       setMessages([
@@ -171,6 +206,17 @@ export default function SimulatorClient({ pitches }: { pitches: Pitch[] }) {
               </h1>
             </div>
             <div className="flex items-center gap-4">
+              <button
+                onClick={() => {
+                  setVoiceEnabled(!voiceEnabled);
+                  if (voiceEnabled) window.speechSynthesis?.cancel();
+                }}
+                className={`text-xs font-medium flex items-center gap-1.5 transition-colors ${voiceEnabled ? 'text-sienna-brown' : 'text-text-muted hover:text-text-primary'}`}
+              >
+                {voiceEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
+                {voiceEnabled ? "Voice On" : "Voice Off"}
+              </button>
+              
               {messages.length > 0 && (
                 <button
                   onClick={clearHistory}
@@ -244,7 +290,11 @@ export default function SimulatorClient({ pitches }: { pitches: Pitch[] }) {
                         </>
                       )}
                     </div>
-                    <p className="whitespace-pre-wrap">{msg.text}</p>
+                    <div className="prose prose-sm dark:prose-invert prose-p:leading-relaxed prose-headings:font-serif max-w-none font-sans">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        {msg.text}
+                      </ReactMarkdown>
+                    </div>
                   </div>
                 </div>
               ))}
