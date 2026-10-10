@@ -2,7 +2,7 @@
 import { supabase } from '@/lib/supabase';
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { generateContentWithFallback } from '@/lib/aiFallback';
 
 
 export async function createPitch(formData: FormData) {
@@ -24,12 +24,6 @@ export async function createPitch(formData: FormData) {
   let generatedDeckJson = null;
 
   try {
-    if (!process.env.GEMINI_API_KEY) {
-      throw new Error("GEMINI_API_KEY is not configured.");
-    }
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-    
     const prompt = `
       You are an expert Silicon Valley Venture Capitalist and pitch deck designer.
       I need you to generate a comprehensive 12-slide pitch deck for my startup.
@@ -64,11 +58,7 @@ export async function createPitch(formData: FormData) {
       12. Unfair Advantage / Moat & The Ask (Funding needed)
     `;
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text().trim();
-    
-    
+    const text = await generateContentWithFallback(prompt);
     const cleanText = text.replace(/```json/gi, '').replace(/```/g, '').trim();
     
     const deckArray = JSON.parse(cleanText);
@@ -112,12 +102,6 @@ export async function createPitchFromBrainDump(formData: FormData) {
   let redirectUrl: string | null = null;
 
   try {
-    if (!process.env.GEMINI_API_KEY) {
-      throw new Error("GEMINI_API_KEY is not configured.");
-    }
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-    
     const prompt = `
       You are an expert Silicon Valley Venture Capitalist and pitch deck designer.
       I have a rough "brain dump" from a founder. I need you to generate a comprehensive 12-slide pitch deck from it.
@@ -148,10 +132,7 @@ export async function createPitchFromBrainDump(formData: FormData) {
       12. Unfair Advantage & The Ask
     `;
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text().trim();
-    
+    const text = await generateContentWithFallback(prompt);
     const cleanText = text.replace(/```json/gi, '').replace(/```/g, '').trim();
     const deckArray = JSON.parse(cleanText);
     generatedDeckJson = JSON.stringify(deckArray);

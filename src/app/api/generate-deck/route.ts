@@ -2,6 +2,7 @@ import { supabase } from '@/lib/supabase';
 import { auth } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import Groq from 'groq-sdk';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
@@ -31,13 +32,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(JSON.parse(pitch.deckData));
     }
 
-    // Call Gemini with Google Search Grounding for live data
-    const model = genAI.getGenerativeModel({ 
-      model: 'gemini-2.5-flash', 
-      tools: [{ googleSearchRetrieval: {} }],
-      generationConfig: { responseMimeType: "application/json" } 
-    });
-    
     const prompt = `You are an expert Silicon Valley VC and pitch deck consultant.
 Given a startup idea, output a JSON object representing exactly 12 pitch deck slides.
 Return ONLY valid raw JSON without markdown formatting, code blocks, or triple backticks.
@@ -77,8 +71,39 @@ Ensure the array contains exactly 12 slide objects, covering ALL of the followin
 12. Unfair Advantage / Moat & The Ask (Funding needed)
 `;
 
-    const result = await model.generateContent(prompt);
-    const responseText = result.response.text();
+    let responseText = "";
+
+    try {
+      const model = genAI.getGenerativeModel({ 
+        model: 'gemini-2.5-flash', 
+        tools: [{ googleSearchRetrieval: {} }],
+        generationConfig: { responseMimeType: "application/json" } 
+      });
+      const result = await model.generateContent(prompt);
+      responseText = result.response.text();
+    } catch (aiError: any) {
+      const errorStr = String(aiError).toLowerCase();
+      if (
+        aiError.status === 503 ||
+        aiError.status === 429 ||
+        errorStr.includes("503") ||
+        errorStr.includes("429") ||
+        errorStr.includes("overloaded") ||
+        errorStr.includes("unavailable") ||
+        errorStr.includes("too many requests") ||
+        errorStr.includes("quota exceeded")
+      ) {
+        console.log("Gemini error (503/429/Quota) in deck generation, falling back to Groq...");
+        const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+        const chatCompletion = await groq.chat.completions.create({
+          messages: [{ role: "user", content: prompt }],
+          model: "openai/gpt-oss-120b",
+        });
+        responseText = chatCompletion.choices[0]?.message?.content?.trim() || "";
+      } else {
+        throw aiError;
+      }
+    }
     
     // Parse to ensure it's valid JSON
     let parsedData;

@@ -1,6 +1,6 @@
 "use server";
 
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { generateContentWithFallback } from "@/lib/aiFallback";
 
 export async function scorePitch(pitch: {
   startupName: string;
@@ -9,13 +9,6 @@ export async function scorePitch(pitch: {
   targetMarket: string;
 }) {
   try {
-    if (!process.env.GEMINI_API_KEY) {
-      throw new Error("GEMINI_API_KEY is not configured.");
-    }
-
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-
     const prompt = `You are a top-tier Silicon Valley VC evaluating a startup pitch.
 
 Startup: ${pitch.startupName}
@@ -39,9 +32,7 @@ Return ONLY a raw JSON object (no markdown) with this exact structure:
   "summary": "<2-3 sentence overall assessment>"
 }`;
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text().trim();
+    const text = await generateContentWithFallback(prompt);
     const cleanText = text.replace(/```json/gi, "").replace(/```/g, "").trim();
     return JSON.parse(cleanText);
   } catch (error) {
