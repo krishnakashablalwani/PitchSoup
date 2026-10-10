@@ -30,7 +30,12 @@ export default function AnalyticsClient({ pitches }: { pitches: Pitch[] }) {
         }
         setOverallScore(`${normalizedScore}/100`);
       } else {
-        scorePitch(latestPitch).then((res) => {
+        scorePitch({
+          startupName: latestPitch.startupName,
+          problem: latestPitch.problem,
+          solution: latestPitch.solution,
+          targetMarket: latestPitch.targetMarket
+        }).then((res) => {
           if (res && res.overallScore) {
             let normalizedScore = Number(res.overallScore);
             if (normalizedScore <= 10) {
