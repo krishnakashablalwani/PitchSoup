@@ -169,7 +169,7 @@ export default function ElevatorPitchClient({ pitches }: { pitches: Pitch[] }) {
           <div className="flex items-center gap-2">
             <Mic className="w-4 h-4 text-sienna-brown" />
             <h3 className="font-serif text-base font-medium text-text-primary">
-              1. Select Pitch for Speaking Scripts
+              Select Pitch for Speaking Scripts
             </h3>
           </div>
           <span className="text-[11px] font-mono text-text-muted">

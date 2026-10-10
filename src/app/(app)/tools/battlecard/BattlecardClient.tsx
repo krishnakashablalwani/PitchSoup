@@ -63,7 +63,7 @@ export default function BattlecardClient({ pitches }: { pitches: Pitch[] }) {
           <div className="flex items-center gap-2">
             <Shield className="w-4 h-4 text-sienna-brown" />
             <h3 className="font-serif text-base font-medium text-text-primary">
-              1. Select Your Pitch Deck
+              Select Your Pitch Deck
             </h3>
           </div>
           <span className="text-[11px] font-mono text-text-muted">

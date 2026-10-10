@@ -61,7 +61,7 @@ export default function PitchScoreClient({ pitches }: { pitches: Pitch[] }) {
           <div className="flex items-center gap-2">
             <Award className="w-4 h-4 text-amber-500" />
             <h3 className="font-serif text-base font-medium text-text-primary">
-              1. Select Pitch Deck to Score
+              Select Pitch Deck to Score
             </h3>
           </div>
           <span className="text-[11px] font-mono text-text-muted">

@@ -11,13 +11,13 @@ export default function AnalyticsClient({ pitches }: { pitches: Pitch[] }) {
   const realPitches = pitches.filter(p => p.id !== DEMO_PITCH_ID);
   
   const decksGenerated = realPitches.length;
-  const hoursSaved = decksGenerated * 20; // estimate 20 hours per deck
+  const hoursSaved = decksGenerated * 100; // DocSend research metric: 100+ hours per deck
   const simulatedSessions = decksGenerated * 2; // placeholder metric until simulation tracking is added
   const overallScore = decksGenerated > 0 ? "82/100" : "N/A"; // Placeholder until scoring is implemented
 
   const metrics = [
     { label: "Overall Pitch Score", value: overallScore, trend: "+0%", icon: Target },
-    { label: "Hours Saved", value: `${hoursSaved}h`, trend: `+${decksGenerated > 0 ? 20 : 0}h`, icon: Clock },
+    { label: "Hours Saved", value: `${hoursSaved}h`, trend: `+${decksGenerated > 0 ? 100 : 0}h`, icon: Clock },
     { label: "Decks Generated", value: decksGenerated.toString(), trend: `+${decksGenerated > 0 ? 1 : 0}`, icon: FileText },
     { label: "Simulated Q&A Sessions", value: simulatedSessions.toString(), trend: "+0", icon: BrainCircuit }
   ];
@@ -94,7 +94,7 @@ export default function AnalyticsClient({ pitches }: { pitches: Pitch[] }) {
               <h4 className="text-[14px] font-medium text-sienna-brown mb-1 relative z-10">Deck Iteration Speed</h4>
               <p className="text-[13px] text-sienna-brown/80 relative z-10">
                 {decksGenerated > 0 
-                  ? `AI drafting is saving you approx ${decksGenerated * 20} hours of manual research and formatting.` 
+                  ? `AI drafting is saving you approx ${decksGenerated * 100} hours of manual strategy and design (based on DocSend research that founders spend 100+ hours per deck).` 
                   : `Start generating decks to measure your time savings.`}
               </p>
             </div>
