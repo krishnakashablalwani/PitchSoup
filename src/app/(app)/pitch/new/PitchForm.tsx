@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { createPitch } from "@/app/actions/pitch";
+import { createPitch, createPitchFromBrainDump } from "@/app/actions/pitch";
 import { SubmitButton } from "./SubmitButton";
-import { Sparkles, Loader2, ArrowRight, ChevronRight, CheckCircle2, MessageSquare } from "lucide-react";
+import { Sparkles, Loader2, ArrowRight, ChevronRight, CheckCircle2, MessageSquare, Zap, Route } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const ONBOARDING_QUESTIONS = [
@@ -30,6 +30,7 @@ const ONBOARDING_QUESTIONS = [
 ];
 
 export default function PitchForm() {
+  const [creationMode, setCreationMode] = useState<"workflow" | "braindump" | null>(null);
   const [step, setStep] = useState(0);
   
   // Onboarding state
@@ -135,6 +136,77 @@ export default function PitchForm() {
       </motion.div>
     );
   };
+
+  const renderBrainDump = () => (
+    <motion.form 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      action={createPitchFromBrainDump}
+      className="space-y-6"
+    >
+      <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-medium mb-8 bg-emerald-500/10 w-fit px-3 py-1.5 rounded-full text-sm border border-emerald-500/20">
+        <Zap className="w-4 h-4" /> AI Magic Dump
+      </div>
+      
+      <h2 className="text-2xl font-serif text-text-primary">
+        Dump your thoughts.
+      </h2>
+      <p className="text-text-secondary text-sm mb-6 leading-relaxed">
+        Don't worry about formatting, market size, or structure. Just tell us what you're building, why it matters, and how it makes money. Our VC AI will extrapolate the rest and build a 12-slide deck.
+      </p>
+
+      <textarea
+        required
+        name="braindump"
+        rows={8}
+        className="w-full bg-bg-secondary border border-border-subtle rounded-xl px-4 py-3 text-sm md:text-base text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all font-sans resize-none"
+        placeholder="So basically we are building Uber but for private jets. The problem is private jets fly empty 40% of the time. We take 10% on every booking..."
+      />
+
+      <SubmitButton label="Generate Deck via AI" loadingLabel="Extrapolating & Generating..." />
+    </motion.form>
+  );
+
+  const renderModeSelector = () => (
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-8"
+    >
+      <div className="text-center space-y-3">
+        <h2 className="text-3xl font-serif text-text-primary">How do you want to start?</h2>
+        <p className="text-text-secondary text-sm">Choose how you want to build your pitch deck.</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <button
+          onClick={() => setCreationMode("braindump")}
+          className="group text-left p-6 rounded-2xl border border-border-subtle bg-bg-secondary hover:border-emerald-500 hover:shadow-subtle-2 transition-all flex flex-col gap-3"
+        >
+          <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 text-emerald-600 group-hover:scale-110 transition-transform">
+            <Zap className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="text-base font-semibold text-text-primary mb-1">AI Brain Dump</h3>
+            <p className="text-xs text-text-secondary leading-relaxed">Fastest way. Just type a messy paragraph of what you're building, and the AI will extrapolate the business model, market size, and generate 12 slides instantly.</p>
+          </div>
+        </button>
+
+        <button
+          onClick={() => setCreationMode("workflow")}
+          className="group text-left p-6 rounded-2xl border border-border-subtle bg-bg-secondary hover:border-sienna-brown hover:shadow-subtle-2 transition-all flex flex-col gap-3"
+        >
+          <div className="w-10 h-10 rounded-full bg-sienna-brown/10 flex items-center justify-center border border-sienna-brown/20 text-sienna-brown group-hover:scale-110 transition-transform">
+            <Route className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="text-base font-semibold text-text-primary mb-1">Guided Workflow</h3>
+            <p className="text-xs text-text-secondary leading-relaxed">More control. Go through a step-by-step wizard to define your problem, solution, and features before the AI generates your deck.</p>
+          </div>
+        </button>
+      </div>
+    </motion.div>
+  );
 
   const renderFormStep = () => (
     <motion.form 
@@ -283,7 +355,9 @@ export default function PitchForm() {
   return (
     <div className="max-w-xl mx-auto py-8">
       <AnimatePresence mode="wait">
-        {step < ONBOARDING_QUESTIONS.length ? renderOnboardingStep() : renderFormStep()}
+        {!creationMode && renderModeSelector()}
+        {creationMode === "braindump" && renderBrainDump()}
+        {creationMode === "workflow" && (step < ONBOARDING_QUESTIONS.length ? renderOnboardingStep() : renderFormStep())}
       </AnimatePresence>
     </div>
   );
