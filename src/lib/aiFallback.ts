@@ -34,6 +34,7 @@ export async function generateContentWithFallback(
       const chatCompletion = await groq.chat.completions.create({
         messages: [{ role: "user", content: prompt }],
         model: groqModel,
+        max_tokens: 8192,
       });
       text = chatCompletion.choices[0]?.message?.content?.trim() || "";
     } else {

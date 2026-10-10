@@ -98,6 +98,7 @@ Ensure the array contains exactly 12 slide objects, covering ALL of the followin
         const chatCompletion = await groq.chat.completions.create({
           messages: [{ role: "user", content: prompt }],
           model: "openai/gpt-oss-120b",
+          max_tokens: 8192,
         });
         responseText = chatCompletion.choices[0]?.message?.content?.trim() || "";
       } else {

@@ -86,6 +86,7 @@ Do not break character. Do not be overly nice. Demand evidence. Never ask generi
         const chatCompletion = await groq.chat.completions.create({
           messages: messages,
           model: "openai/gpt-oss-120b",
+          max_tokens: 8192,
         });
 
         text = chatCompletion.choices[0]?.message?.content?.trim() || "";
