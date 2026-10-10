@@ -61,7 +61,19 @@ export async function createPitch(formData: FormData) {
     const text = await generateContentWithFallback(prompt);
     const cleanText = text.replace(/```json/gi, '').replace(/```/g, '').trim();
     
-    const deckArray = JSON.parse(cleanText);
+    let deckArray;
+    try {
+      deckArray = JSON.parse(cleanText);
+    } catch (parseError) {
+      console.warn("JSON Parse Error, attempting salvage:", parseError);
+      const lastValidBrace = cleanText.lastIndexOf('}');
+      if (lastValidBrace !== -1) {
+        const salvaged = cleanText.substring(0, lastValidBrace + 1) + ']';
+        deckArray = JSON.parse(salvaged);
+      } else {
+        throw parseError;
+      }
+    }
     generatedDeckJson = JSON.stringify(deckArray);
   } catch (err) {
     console.error("Gemini Generation Error:", err);
@@ -87,7 +99,7 @@ export async function createPitch(formData: FormData) {
     redirect(`/pitch/new?error=${encodeURIComponent(error?.message || 'Unknown Supabase error')}`);
   }
 
-  redirect(`/deck/${data.id}`);
+  redirect(`/deck/${data.id}?new=true`);
 }
 
 export async function createPitchFromBrainDump(formData: FormData) {
@@ -134,7 +146,19 @@ export async function createPitchFromBrainDump(formData: FormData) {
 
     const text = await generateContentWithFallback(prompt);
     const cleanText = text.replace(/```json/gi, '').replace(/```/g, '').trim();
-    const deckArray = JSON.parse(cleanText);
+    let deckArray;
+    try {
+      deckArray = JSON.parse(cleanText);
+    } catch (parseError) {
+      console.warn("JSON Parse Error, attempting salvage:", parseError);
+      const lastValidBrace = cleanText.lastIndexOf('}');
+      if (lastValidBrace !== -1) {
+        const salvaged = cleanText.substring(0, lastValidBrace + 1) + ']';
+        deckArray = JSON.parse(salvaged);
+      } else {
+        throw parseError;
+      }
+    }
     generatedDeckJson = JSON.stringify(deckArray);
     
     const startupName = deckArray[0].title.replace("Pitch Deck", "").trim() || "My Startup";
@@ -159,7 +183,7 @@ export async function createPitchFromBrainDump(formData: FormData) {
       console.error("Supabase Error: ", error);
       redirectUrl = `/pitch/new?error=${encodeURIComponent(error?.message || 'Unknown Supabase error')}`;
     } else {
-      redirectUrl = `/deck/${data.id}`;
+      redirectUrl = `/deck/${data.id}?new=true`;
     }
 
   } catch (err: any) {

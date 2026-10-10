@@ -608,8 +608,8 @@ function FeaturesSection() {
       ),
     },
     {
-      title: "Investor Match & Outreach",
-      desc: "A targeting tool that matches your startup with ideal investor profiles based on your industry. It automatically drafts highly personalized, thesis-driven cold-outreach emails designed to capture attention.",
+      title: "Investor Intelligence & Live Discovery",
+      desc: "A powerful CRM that matches your startup with ideal VCs. It scrapes live LinkedIn and web data to build comprehensive firm profiles—uncovering partner backgrounds, investment theses, pitching red flags, and instantly drafting personalized, editable cold emails.",
       graphic: (
         <div className="w-full aspect-square md:aspect-[4/3] bg-bg-primary border border-border-subtle rounded-cards p-6 shadow-subtle-2 flex items-center justify-center relative overflow-hidden group">
           <div className="absolute top-0 left-0 w-32 h-32 bg-emerald-500/10 blur-[40px] rounded-full group-hover:bg-emerald-500/20 transition-colors duration-1000" />

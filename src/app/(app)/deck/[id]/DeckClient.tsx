@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { deletePitch, updatePitch, updatePitchDeckData } from "@/app/actions/pitchCrud";
+import confetti from "canvas-confetti";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronLeft,
@@ -65,6 +66,42 @@ export default function DeckClient({
   const [isExiting, setIsExiting] = useState(false);
   
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get("new") === "true") {
+      const storageKey = `pitchsoup_confetti_${pitch.id}`;
+      if (!sessionStorage.getItem(storageKey)) {
+        sessionStorage.setItem(storageKey, "true");
+        
+        // Fire confetti
+        const duration = 3000;
+        const end = Date.now() + duration;
+
+        const frame = () => {
+          confetti({
+            particleCount: 5,
+            angle: 60,
+            spread: 55,
+            origin: { x: 0 },
+            colors: ['#5d2a1a', '#fdfbf7', '#d946ef', '#10b981']
+          });
+          confetti({
+            particleCount: 5,
+            angle: 120,
+            spread: 55,
+            origin: { x: 1 },
+            colors: ['#5d2a1a', '#fdfbf7', '#d946ef', '#10b981']
+          });
+
+          if (Date.now() < end) {
+            requestAnimationFrame(frame);
+          }
+        };
+        frame();
+      }
+    }
+  }, [searchParams, pitch.id]);
 
   const [editForm, setEditForm] = useState({
     startupName: pitch.startupName || "",

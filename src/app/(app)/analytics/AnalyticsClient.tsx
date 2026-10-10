@@ -2,8 +2,9 @@
 
 import { motion } from "framer-motion";
 import { TrendingUp, Clock, FileText, Target, BrainCircuit, Activity } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { scorePitch } from "@/app/actions/score";
+import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Tooltip } from "recharts";
 
 import type { Pitch } from "@/lib/mockPitch";
 const DEMO_PITCH_ID = '00000000-0000-0000-0000-000000000001';
@@ -11,9 +12,10 @@ const DEMO_PITCH_ID = '00000000-0000-0000-0000-000000000001';
 export default function AnalyticsClient({ pitches }: { pitches: Pitch[] }) {
   const [overallScore, setOverallScore] = useState<string>("...");
   const [simulatedSessions, setSimulatedSessions] = useState<number>(0);
+  const [dimensionsData, setDimensionsData] = useState<any[]>([]);
 
   // Filter out the demo pitch to get true original data
-  const realPitches = pitches.filter(p => p.id !== DEMO_PITCH_ID);
+  const realPitches = useMemo(() => pitches.filter(p => p.id !== DEMO_PITCH_ID), [pitches]);
   
   const decksGenerated = realPitches.length;
   
@@ -21,14 +23,17 @@ export default function AnalyticsClient({ pitches }: { pitches: Pitch[] }) {
     if (decksGenerated > 0) {
       const latestPitch = realPitches[0];
       const cacheKey = `pitchsoup_score_${latestPitch.id}`;
+      const dimCacheKey = `pitchsoup_dimensions_${latestPitch.id}`;
       const cached = localStorage.getItem(cacheKey);
+      const cachedDims = localStorage.getItem(dimCacheKey);
       
-      if (cached) {
+      if (cached && cachedDims) {
         let normalizedScore = Number(cached);
         if (normalizedScore <= 10) {
           normalizedScore = Math.round(normalizedScore * 10);
         }
         setOverallScore(`${normalizedScore}/100`);
+        setDimensionsData(JSON.parse(cachedDims));
       } else {
         scorePitch({
           startupName: latestPitch.startupName,
@@ -43,6 +48,16 @@ export default function AnalyticsClient({ pitches }: { pitches: Pitch[] }) {
             }
             setOverallScore(`${normalizedScore}/100`);
             localStorage.setItem(cacheKey, normalizedScore.toString());
+            
+            if (res.dimensions) {
+              const mappedDims = res.dimensions.map((d: any) => ({
+                subject: d.name,
+                A: Number(d.score),
+                fullMark: 10,
+              }));
+              setDimensionsData(mappedDims);
+              localStorage.setItem(dimCacheKey, JSON.stringify(mappedDims));
+            }
           } else {
             setOverallScore("82/100"); // fallback if api fails
           }
@@ -61,7 +76,7 @@ export default function AnalyticsClient({ pitches }: { pitches: Pitch[] }) {
       setOverallScore("N/A");
       setSimulatedSessions(0);
     }
-  }, [decksGenerated, realPitches]);
+  }, [decksGenerated, pitches]);
 
   const hoursSaved = decksGenerated > 0 ? decksGenerated * 40 : 0;
 
@@ -104,7 +119,7 @@ export default function AnalyticsClient({ pitches }: { pitches: Pitch[] }) {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        {/* Feedback Quality Chart (Removed Mock Data) */}
+        {/* Latest Pitch Score Breakdown */}
         <motion.div 
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
@@ -114,15 +129,28 @@ export default function AnalyticsClient({ pitches }: { pitches: Pitch[] }) {
           <div className="flex justify-between items-center mb-8 border-b border-border-subtle pb-4">
             <h2 className="font-serif text-[1.25rem] text-text-primary flex items-center gap-2">
               <Activity className="w-5 h-5 text-sienna-brown" />
-              Feedback Quality Progression
+              Latest Pitch Assessment
             </h2>
           </div>
           
-          <div className="relative h-[250px] w-full flex items-center justify-center px-4 pb-6 pt-4 bg-bg-secondary/50 rounded-xl border border-dashed border-border-subtle">
-             {decksGenerated === 0 ? (
-               <p className="text-text-tertiary text-sm">Not enough original data yet to plot feedback progression. Generate more decks.</p>
+          <div className="relative h-[400px] w-full flex items-center justify-center px-4 pb-6 pt-4 bg-bg-secondary/50 rounded-xl border border-dashed border-border-subtle">
+             {dimensionsData.length > 0 ? (
+               <ResponsiveContainer width="100%" height="100%">
+                 <RadarChart cx="50%" cy="50%" outerRadius="80%" data={dimensionsData}>
+                   <PolarGrid stroke="var(--border-subtle)" />
+                   <PolarAngleAxis dataKey="subject" tick={{ fill: "var(--text-secondary)", fontSize: 12, fontFamily: "var(--font-sans)" }} />
+                   <PolarRadiusAxis angle={30} domain={[0, 10]} tick={false} axisLine={false} />
+                   <Tooltip 
+                     contentStyle={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-subtle)', borderRadius: '12px' }}
+                     itemStyle={{ color: 'var(--color-sienna-brown)' }}
+                   />
+                   <Radar name="Score" dataKey="A" stroke="var(--color-sienna-brown)" fill="var(--color-sienna-brown)" fillOpacity={0.4} />
+                 </RadarChart>
+               </ResponsiveContainer>
+             ) : decksGenerated === 0 ? (
+               <p className="text-text-tertiary text-sm">Not enough original data yet to plot assessment. Generate a deck.</p>
              ) : (
-               <p className="text-text-tertiary text-sm">Data processing... More simulation sessions required to plot progression.</p>
+               <p className="text-text-tertiary text-sm">Scoring in progress... analyzing your pitch.</p>
              )}
           </div>
         </motion.div>

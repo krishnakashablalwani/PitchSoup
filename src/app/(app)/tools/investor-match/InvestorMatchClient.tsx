@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { findInvestors } from "@/app/actions/match";
+import { findInvestors, scrapeInvestorContact, generateOutreach } from "@/app/actions/match";
 import {
   Users,
   Search,
@@ -35,6 +35,30 @@ export default function InvestorMatchClient({ pitches }: { pitches: Pitch[] }) {
   const [investors, setInvestors] = useState<Investor[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [contacts, setContacts] = useState<Record<string, string>>({});
+  const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const [loadingContacts, setLoadingContacts] = useState<Record<string, boolean>>({});
+
+  const handleGetContact = async (investorName: string) => {
+    setLoadingContacts((prev) => ({ ...prev, [investorName]: true }));
+    try {
+      const pitch = pitches.find(p => p.id === selectedPitch);
+      if (!pitch) return;
+      
+      const { email, emailBody } = await generateOutreach(investorName, pitch);
+      setContacts((prev) => ({ ...prev, [investorName]: email }));
+      setDrafts((prev) => ({ ...prev, [investorName]: emailBody }));
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingContacts((prev) => ({ ...prev, [investorName]: false }));
+    }
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    alert("Copied to clipboard!");
+  };
 
   const handleMatch = async () => {
     if (!selectedPitch) return;
@@ -156,6 +180,70 @@ export default function InvestorMatchClient({ pitches }: { pitches: Pitch[] }) {
                       {inv.typicalCheck}
                     </span>
                   </div>
+                </div>
+
+                <div className="flex flex-col gap-2 bg-bg-secondary/50 border border-border-subtle p-3 rounded-xl mt-2">
+                  <div className="flex items-center justify-between">
+                    <div className="text-xs font-medium text-text-secondary">
+                      Outreach Contact &amp; Draft
+                    </div>
+                    {contacts[inv.name] ? (
+                      <a 
+                        href={(() => {
+                          const contact = contacts[inv.name];
+                          if (contact.includes('@')) return `mailto:${contact}`;
+                          const urlPart = contact.split(' ').pop();
+                          if (urlPart) return urlPart.startsWith('http') ? urlPart : `https://${urlPart}`;
+                          return "#";
+                        })()}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs font-mono font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/20 cursor-pointer hover:bg-emerald-500/20 transition-colors flex items-center gap-2 truncate max-w-[200px] sm:max-w-[300px]"
+                        title={contacts[inv.name]}
+                      >
+                        {contacts[inv.name]}
+                      </a>
+                    ) : (
+                      <button
+                        onClick={() => handleGetContact(inv.name)}
+                        disabled={loadingContacts[inv.name]}
+                        className="text-xs font-medium bg-ink-black text-paper-white px-3 py-1.5 rounded-lg shadow-subtle hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 flex items-center gap-1.5"
+                      >
+                        {loadingContacts[inv.name] ? (
+                          <><Loader2 className="w-3 h-3 animate-spin" /> Preparing...</>
+                        ) : (
+                          <><Search className="w-3 h-3" /> Get LinkedIn Contact &amp; Draft Pitch</>
+                        )}
+                      </button>
+                    )}
+                  </div>
+                  
+                  
+                  {drafts[inv.name] && (
+                    <div className="mt-2 relative group">
+                      <textarea
+                        value={drafts[inv.name]}
+                        onChange={(e) => setDrafts({ ...drafts, [inv.name]: e.target.value })}
+                        className="w-full p-3 bg-bg-floating border border-border-subtle rounded-lg text-xs font-sans text-text-primary leading-relaxed shadow-xs focus:ring-1 focus:ring-sienna-brown focus:outline-none resize-y min-h-[120px]"
+                      />
+                      <button
+                        onClick={() => copyToClipboard(drafts[inv.name])}
+                        className="absolute top-2 right-2 p-1.5 bg-bg-secondary text-text-muted hover:text-text-primary rounded opacity-0 group-hover:opacity-100 transition-opacity border border-border-subtle"
+                        title="Copy draft"
+                      >
+                        <FolderOpen className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  )}
+
+                  {contacts[inv.name] && (
+                    <a
+                      href={`/investor/${encodeURIComponent(inv.name)}`}
+                      className="mt-2 w-full bg-sienna-brown text-paper-white px-3 py-2 rounded-lg text-xs font-medium text-center hover:scale-[1.01] active:scale-[0.99] transition-transform shadow-subtle"
+                    >
+                      View Full Company &amp; Partner Deep Dive &rarr;
+                    </a>
+                  )}
                 </div>
 
                 <div className="space-y-3 text-xs font-sans">
